@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1117">
+  <meta name="description" content="Freight profitability analyzer for owner-operators">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Load Analyzer">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMGYxMTE3Ii8+PHRleHQgeD0iOTYiIHk9IjExNSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNzIiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNmNTllMGIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPktCPC90ZXh0Pjwvc3ZnPg==">
+  <link rel="apple-touch-startup-image" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjgwIiBmaWxsPSIjMGYxMTE3Ii8+PHRleHQgeD0iMjU2IiB5PSIzMTAiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2Y1OWUwYiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+S0I8L3RleHQ+PC9zdmc+">
+
+  <!-- Android PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <title>KB Cooper Load Analyzer</title>
+
+  <!-- RevenueCat Web Billing (web version only) -->
+  <script src="https://cdn.jsdelivr.net/npm/@revenuecat/purchases-js@1.68.0/dist/Purchases.umd.js"></script>
+
+</head>
+<body style="margin:0;padding:0;background:#0f1117;height:100%;overflow:hidden;">
+<div id="paywall-overlay" style="display:none;">
+  <div class="pw-logo">KB COOPER</div>
+  <div class="pw-sub">Load Analyzer — Professional Edition</div>
+  <div class="pw-trial">🎉 3-Day Free Trial — Cancel Anytime</div>
+  <div class="pw-card selected" id="pw-monthly" onclick="pwSelect('monthly')">
+    <div class="pw-card-top">
+      <div class="pw-card-name">Monthly</div>
+      <div class="pw-card-price">$3.49<span style="font-size:13px;font-weight:400;color:#94a3b8;">/mo</span></div>
+    </div>
+    <div class="pw-card-desc">Billed monthly after free trial</div>
+  </div>
+  <div class="pw-card" id="pw-yearly" onclick="pwSelect('yearly')">
+    <div class="pw-card-top">
+      <div class="pw-card-name">Yearly <span style="font-size:11px;background:#10b981;color:#0f1117;border-radius:4px;padding:2px 6px;font-weight:700;">SAVE 28%</span></div>
+      <div class="pw-card-price">$29.99<span style="font-size:13px;font-weight:400;color:#94a3b8;">/yr</span></div>
+    </div>
+    <div class="pw-card-desc">Billed yearly after free trial — best value</div>
+  </div>
+  <button class="pw-btn" id="pw-subscribe-btn" onclick="pwSubscribe()">START FREE TRIAL</button>
+  <div class="pw-restore" onclick="pwRestore()">Restore Previous Purchase</div>
+  <div class="pw-error" id="pw-error"></div>
+</div>
+
+<!-- POD Photo Viewer Overlay -->
+<div id="pod-viewer-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9998;flex-direction:column;align-items:center;justify-content:center;">
+  <button onclick="closePODViewer()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:22px;width:44px;height:44px;border-radius:22px;cursor:pointer;line-height:44px;text-align:center;">×</button>
+  <img id="pod-viewer-img" src="" style="max-width:96%;max-height:88vh;object-fit:contain;border-radius:8px;">
+</div>
+
+<!-- POD Send Modal -->
+<div id="pod-send-overlay" onclick="closePODSend()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9997;align-items:flex-end;justify-content:center;">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,16px);">
+    <div style="padding:16px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e0e0e0;flex-shrink:0;">
+      <div style="font-size:13px;font-weight:700;color:#111;letter-spacing:0.5px;">SEND PROOF OF DELIVERY</div>
+      <button onclick="closePODSend()" style="background:none;border:none;color:#888;font-size:24px;cursor:pointer;padding:0;line-height:1;width:32px;height:32px;">×</button>
+    </div>
+    <div style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px;flex:1;">
+      <div id="pod-send-details" style="background:#f5f5f5;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#222;line-height:1.7;white-space:pre-wrap;word-break:break-word;"></div>
+    </div>
+    <div style="padding:0 16px 14px;flex-shrink:0;">
+      <button style="width:100%;margin-bottom:8px;padding:12px;font-size:12px;font-weight:600;border:2px solid #555;background:#fff;color:#333;border-radius:8px;cursor:pointer;" onclick="openPODMailto()">✉️ OPEN IN MAIL (recipients pre-filled, no photos)</button>
+      <button style="width:100%;padding:13px;font-size:13px;font-weight:700;background:#2196f3;color:#fff;border:none;border-radius:8px;cursor:pointer;" onclick="sharePODPhotos()">📎 SHARE WITH PHOTOS</button>
+      <div style="font-size:10px;color:#888;text-align:center;margin-top:8px;">Open in Mail to pre-fill recipients · Share with Photos to attach images</div>
+    </div>
+  </div>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap');
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:rgba(255,255,255,0.08);--accent:#f59e0b;--accent2:#10b981;--danger:#ef4444;--info:#60a5fa;--purple:#a78bfa;--text:#f1f5f9;--muted:#94a3b8;--fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+.app{padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);}
+
+html{height:100%;}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:420px;margin:0 auto;background:var(--bg);color:var(--text);font-family:var(--fb);position:fixed;top:0;left:0;right:0;bottom:0;max-width:420px;margin:0 auto;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 14px 9px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.brand-name{font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:2px;color:var(--accent);line-height:1;}
+.brand-sub{font-family:var(--fh);font-size:18px;font-weight:700;letter-spacing:1px;color:var(--text);line-height:1.1;margin-top:1px;}
+.brand-tag{font-size:9px;color:var(--muted);letter-spacing:0.8px;margin-top:2px;}
+.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+.nav-btn{flex:0 0 auto;padding:9px 10px 7px;font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:0.3px;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.content{flex:1;padding:13px;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;}
+.section-title{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:9px;text-transform:uppercase;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+.form-group{margin-bottom:9px;}
+.form-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;display:block;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--fb);font-size:13px;outline:none;transition:border-color 0.15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-select option{background:var(--bg);}
+.form-textarea{resize:vertical;min-height:70px;line-height:1.5;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.btn{padding:9px 13px;border-radius:6px;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.5px;cursor:pointer;border:none;transition:all 0.15s;}
+.btn-primary{background:var(--accent);color:#0f1117;}
+.btn-success{background:var(--accent2);color:#0f1117;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text);}
+.btn-info{background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:var(--info);}
+.btn-purple{background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);color:var(--purple);}
+.btn-sm{padding:5px 9px;font-size:11px;}
+.btn-full{width:100%;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.stat-card{background:var(--surface2);border-radius:8px;padding:10px;}
+.stat-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;}
+.stat-value{font-family:var(--fh);font-size:20px;font-weight:700;}
+.stat-value.green{color:var(--accent2);}
+.stat-value.amber{color:var(--accent);}
+.stat-value.red{color:var(--danger);}
+.stat-value.blue{color:var(--info);}
+.stat-value.purple{color:var(--purple);}
+.load-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px;margin-bottom:7px;}
+.load-item.counteroffer{border-color:rgba(167,139,250,0.35);background:rgba(167,139,250,0.04);}
+.load-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.load-route{font-family:var(--fh);font-size:14px;font-weight:600;}
+.load-profit{font-family:var(--fh);font-size:17px;font-weight:700;}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:0.3px;}
+.badge-amber{background:rgba(245,158,11,0.15);color:var(--accent);}
+.badge-green{background:rgba(16,185,129,0.15);color:var(--accent2);}
+.badge-red{background:rgba(239,68,68,0.15);color:var(--danger);}
+.badge-blue{background:rgba(96,165,250,0.15);color:var(--info);}
+.badge-purple{background:rgba(167,139,250,0.15);color:var(--purple);}
+.load-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.info-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.info-row:last-child{border-bottom:none;}
+.info-key{color:var(--muted);}
+.info-val{font-weight:500;text-align:right;max-width:62%;}
+.analysis-box{background:var(--surface2);border-radius:8px;padding:11px;margin-top:8px;}
+.big-profit{text-align:center;padding:13px;}
+.big-profit-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;}
+.big-profit-val{font-family:var(--fh);font-size:36px;font-weight:700;}
+.alert{padding:9px 11px;border-radius:6px;font-size:12px;margin-bottom:9px;line-height:1.5;}
+.alert-info{background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:var(--info);}
+.alert-warn{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:var(--accent);}
+.alert-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--danger);}
+.alert-purple{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--purple);}
+.period-btn{flex:1;padding:6px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--fh);}
+.period-btn.active{background:var(--surface2);color:var(--text);border-color:var(--muted);}
+.threshold-alert{border-radius:8px;padding:9px 11px;margin-bottom:9px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.threshold-pass{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:var(--accent2);}
+.threshold-fail{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:var(--danger);}
+.hos-box{background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.25);border-radius:8px;padding:11px;margin-bottom:9px;}
+.hos-title{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--info);letter-spacing:0.5px;margin-bottom:7px;}
+.hos-warn{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.25);}
+.hos-warn .hos-title{color:var(--accent);}
+.counteroffer-box{background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.3);border-radius:8px;padding:12px;margin-top:8px;}
+.counteroffer-title{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--purple);letter-spacing:0.5px;margin-bottom:8px;}
+.map-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(96,165,250,0.3);background:rgba(96,165,250,0.08);color:var(--info);font-family:var(--fh);text-decoration:none;}
+.sub-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin:10px 0 7px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.sub-section:first-child{margin-top:0;}
+.override-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.po-badge{display:inline-block;font-family:var(--fh);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(96,165,250,0.12);color:var(--info);letter-spacing:0.5px;}
+.calc-hint{font-size:10px;color:var(--muted);margin-top:3px;}
+.group-header{display:flex;justify-content:space-between;align-items:center;padding:10px 0 8px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.group-header-label{font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;}
+.group-toggle{font-size:14px;color:var(--muted);}
+.expiry-bar{height:3px;border-radius:2px;margin-top:7px;background:var(--surface2);overflow:hidden;}
+.expiry-fill{height:100%;border-radius:2px;background:var(--purple);}
+.expiry-text{font-size:10px;color:var(--purple);margin-top:3px;}
+/* Lease meter */
+.lease-meter-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+.lease-meter-title{font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;}
+.lease-bar-track{height:10px;border-radius:5px;background:var(--surface2);overflow:hidden;margin:6px 0 4px;}
+.lease-bar-fill{height:100%;border-radius:5px;transition:width 0.4s;}
+.lease-bar-warn{background:var(--accent);}
+.lease-bar-ok{background:var(--accent2);}
+.lease-bar-over{background:var(--danger);}
+.lease-stats{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px;}
+.overage-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:var(--danger);letter-spacing:0.3px;margin-left:6px;}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+.type-toggle{display:flex;gap:4px;margin-top:5px;}
+.type-btn{flex:1;padding:3px 5px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--fh);letter-spacing:0.3px;text-align:center;}
+.type-btn.active-rate{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:var(--danger);}
+.type-btn.active-addon{background:rgba(96,165,250,0.15);border-color:rgba(96,165,250,0.4);color:var(--info);}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:pointer;}
+.setup-card-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding:2px 0;}
+.setup-card-toggle{font-size:14px;color:var(--muted);font-weight:700;}
+
+/* Paywall */
+#paywall-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1117;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;}
+.pw-logo{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#f59e0b;letter-spacing:2px;margin-bottom:4px;}
+.pw-sub{font-family:'Barlow',sans-serif;font-size:13px;color:#94a3b8;margin-bottom:28px;text-align:center;}
+.pw-card{background:#1a1d27;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;width:100%;max-width:360px;margin-bottom:12px;cursor:pointer;transition:border-color 0.2s;}
+.pw-card.selected{border-color:#f59e0b;}
+.pw-card-top{display:flex;justify-content:space-between;align-items:center;}
+.pw-card-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#f1f5f9;}
+.pw-card-price{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#f59e0b;}
+.pw-card-desc{font-size:11px;color:#94a3b8;margin-top:4px;}
+.pw-trial{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:8px 12px;text-align:center;font-size:12px;color:#10b981;margin-bottom:20px;width:100%;max-width:360px;box-sizing:border-box;}
+.pw-btn{width:100%;max-width:360px;padding:16px;background:#f59e0b;color:#0f1117;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;margin-bottom:10px;}
+.pw-btn:disabled{opacity:0.5;}
+.pw-restore{font-size:12px;color:#60a5fa;text-decoration:underline;cursor:pointer;margin-top:4px;}
+.pw-error{font-size:11px;color:#ef4444;margin-top:8px;text-align:center;}
+
+</style>
+
+<div class="app" id="app">
+  <div class="header">
+    <div>
+      <div class="brand-name">KB COOPER ENTERPRISES</div>
+      <div class="brand-sub">LOAD ANALYZER</div>
+      <div class="brand-tag">FREIGHT PROFITABILITY PLATFORM</div>
+    </div>
+    <div id="hv" style="text-align:right;font-size:10px;color:var(--muted);"></div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showTab('dashboard')">DASH</button>
+    <button class="nav-btn" onclick="showTab('analyze')">ANALYZE</button>
+    <button class="nav-btn" onclick="showTab('loads')">LOADS</button>
+    <button class="nav-btn" onclick="showTab('triplog')">TRIP LOG</button>
+    <button class="nav-btn" onclick="showTab('setup')">SETUP</button>
+    <button class="nav-btn" onclick="showTab('reports')">REPORTS</button>
+  </div>
+  <div class="content" id="mc"><div style="color:#f59e0b;padding:20px;font-size:14px;">Loading app...</div></div>
+</div>
+
+<script>
+// ES5 diagnostic -- runs before main script
+(function() {
+  var mc = document.getElementById('mc');
+  function showStatus(msg, color) {
+    if (mc) mc.innerHTML = '<div style="color:' + (color||'#f59e0b') + ';padding:16px;font-size:13px;font-family:sans-serif;">' + msg + '</div>';
+  }
+  showStatus('Step 1: Basic JS running OK');
+  window.onerror = function(msg, src, line, col) {
+    showStatus('JS Error: ' + msg + ' (line ' + line + ')', '#ef4444');
+    return true;
+  };
+  // Test modern JS support
+  try { eval('"use strict"; var x = {a:1}; var y = Object.assign({}, x);'); showStatus('Step 2: Object.assign OK'); } catch(e) { showStatus('Object.assign failed: ' + e.message, '#ef4444'); return; }
+  try { eval('"use strict"; var f = (a) => a;'); showStatus('Step 3: Arrow functions OK'); } catch(e) { showStatus('Arrow function failed: ' + e.message, '#ef4444'); return; }
+  try { eval('"use strict"; var p = new Promise(function(r){r();});'); showStatus('Step 4: Promise OK'); } catch(e) { showStatus('Promise failed: ' + e.message, '#ef4444'); return; }
+  try { eval('"use strict"; const x = {a:1}; const y = {...x};'); showStatus('Step 5: Object spread OK'); } catch(e) { showStatus('Object spread NOT supported: ' + e.message + ' -- This is the issue!', '#ef4444'); return; }
+  try { eval('"use strict"; async function f(){} f();'); showStatus('Step 6: Async/await OK'); } catch(e) { showStatus('Async failed: ' + e.message, '#ef4444'); return; }
+  showStatus('All checks passed -- loading main app...');
+})();
+</script>
+
+<script>
+const KV='kbc_v7_config', KL='kbc_v7_loads', KTL='kbc_v7_triplog';
+// Service fee amounts -- updated by developer in version releases only
+const APP_MONTHLY_FEE=3.49;
+const APP_YEARLY_FEE=29.99;
+const MILES_PER_DAY=750, MAX_SPEED=75, CO_EXPIRY_MS=48*60*60*1000;
+let S={tab:'dashboard',config:null,loads:[],tripLog:[],af:{},dp:'week',emailDraft:null,coData:null,subscribed:false,subChecked:false,subError:null,
+  collapsed:{accepted:false,counteroffer:false,declined:true},editingCO:null,pendingCOEmail:null,pendingAcceptEmail:null,analysisReady:false,rp:'month',lp:'active',tlp:'all',ss:{personal:false,vehicle:false,broker:false,overnightInsurance:false,lease:false,profitability:false,summary:true},tlManualLocation:'',tlGeoStatus:null,tlGeoCoords:null,viewingPOD:null};
+
+async function loadState(){
+  try{const v=localStorage.getItem(KV);if(v)S.config=JSON.parse(v);}catch(e){}
+  try{const l=localStorage.getItem(KL);if(l)S.loads=JSON.parse(l);}catch(e){}
+  try{const t=localStorage.getItem(KTL);if(t)S.tripLog=JSON.parse(t);}catch(e){}
+  expireCounterOffers();
+  expirePODs();
+  backfillLoadMileage();
+}
+function backfillLoadMileage(){
+  // For any load-based stop entry missing mileage, pull it from the load record
+  let changed=false;
+  S.tripLog.forEach((entry,idx)=>{
+    if(entry.type!=='stop'||entry.mileageLookup||!entry.loadId)return;
+    const load=S.loads.find(l=>l.id===entry.loadId);
+    if(load&&pf(load.totalMiles)>0){
+      entry.mileageLookup={miles:Math.round(pf(load.totalMiles)),isEstimate:false,manual:false,fromLoad:true};
+      changed=true;
+    }
+  });
+  if(changed)saveTripLog();
+}
+async function saveCfg(){try{localStorage.setItem(KV,JSON.stringify(S.config));}catch(e){}}
+async function saveLds(){try{localStorage.setItem(KL,JSON.stringify(S.loads));}catch(e){}}
+async function saveTripLog(){try{localStorage.setItem(KTL,JSON.stringify(S.tripLog));}catch(e){}}
+
+function expireCounterOffers(){
+  const now=Date.now();let changed=false;
+  S.loads=S.loads.map(l=>{
+    if(l.status==='counteroffer'&&l.counterofferSentAt&&(now-l.counterofferSentAt)>=CO_EXPIRY_MS){
+      changed=true;return{...l,status:'declined',declinedReason:'Counteroffer expired (48h)'};
+    }
+    return l;
+  });
+  if(changed)saveLds();
+}
+
+// ── Proof of Delivery (POD) ─────────────────────────────────────
+function expirePODs(){
+  const cutoff=Date.now()-(60*24*60*60*1000);
+  let changed=false;
+  S.loads=S.loads.map(l=>{
+    if(!l.pods||l.pods.length===0)return l;
+    const kept=l.pods.filter(p=>new Date(p.capturedAt).getTime()>cutoff);
+    if(kept.length!==l.pods.length){changed=true;return{...l,pods:kept};}
+    return l;
+  });
+  if(changed)saveLds();
+}
+
+async function capturePOD(loadId){
+  var Camera=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Camera;
+  // Try Capacitor Camera plugin first
+  if(Camera){
+    var photo=null;
+    try{
+      photo=await Camera.getPhoto({quality:70,allowEditing:false,resultType:'dataUrl',source:'Camera',saveToGallery:false});
+    }catch(e1){
+      if(e1&&e1.message&&/cancel|dismiss|user cancelled/i.test(e1.message))return;
+      try{
+        photo=await Camera.getPhoto({quality:70,allowEditing:false,resultType:'dataUrl',source:'Photos',saveToGallery:false});
+      }catch(e2){
+        if(e2&&e2.message&&/cancel|dismiss|user cancelled/i.test(e2.message))return;
+        // Both failed — fall through to HTML file picker below
+        photo=null;
+      }
+    }
+    if(photo&&photo.dataUrl){
+      const pod={id:Date.now(),dataUrl:photo.dataUrl,capturedAt:new Date().toISOString()};
+      S.loads=S.loads.map(l=>l.id===loadId?{...l,pods:[...(l.pods||[]),pod]}:l);
+      await saveLds();render();return;
+    }
+  }
+  // HTML5 file input fallback (works in simulator and as backup on device)
+  var input=document.createElement('input');
+  input.type='file';
+  input.accept='image/*';
+  input.onchange=async function(){
+    var file=input.files&&input.files[0];
+    if(!file)return;
+    var reader=new FileReader();
+    reader.onload=async function(ev){
+      var dataUrl=ev.target.result;
+      if(!dataUrl)return;
+      const pod={id:Date.now(),dataUrl:dataUrl,capturedAt:new Date().toISOString()};
+      S.loads=S.loads.map(l=>l.id===loadId?{...l,pods:[...(l.pods||[]),pod]}:l);
+      await saveLds();render();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function viewPOD(loadId,podId){
+  const l=S.loads.find(x=>x.id===loadId);
+  if(!l||!l.pods)return;
+  const pod=l.pods.find(p=>p.id===podId);
+  if(!pod)return;
+  const overlay=document.getElementById('pod-viewer-overlay');
+  const img=document.getElementById('pod-viewer-img');
+  if(overlay&&img){img.src=pod.dataUrl;overlay.style.display='flex';}
+}
+
+function closePODViewer(){
+  const overlay=document.getElementById('pod-viewer-overlay');
+  const img=document.getElementById('pod-viewer-img');
+  if(overlay)overlay.style.display='none';
+  if(img)img.src='';
+}
+
+async function deletePOD(loadId,podId){
+  if(!confirm('Remove this POD photo?'))return;
+  S.loads=S.loads.map(l=>l.id===loadId?{...l,pods:(l.pods||[]).filter(p=>p.id!==podId)}:l);
+  await saveLds();render();
+}
+
+var _podSendLoadId=null;
+
+function buildPODEmailParts(l){
+  const c=cfg();
+  const route=l.route||((l.pickupCity||'origin')+' to '+(l.dropoffCity||'destination'));
+  const poRef=l.poNumber?' (PO #'+l.poNumber+')':'';
+  const shipperName=l.shipperContact||l.shipperCompany||'Shipper';
+  const toEmail=l.shipperEmail||'';
+  const ccEmail=(c&&c.brokerEmail)||'';
+  const subject='Proof of Delivery - '+route+poRef;
+  const pickedUpLine=l.pickedUpAt?'\nPickup:    '+fmtStamp(l.pickedUpAt):'';
+  const deliveredLine=l.deliveredAt?'\nDelivery:  '+fmtStamp(l.deliveredAt):'';
+  const sig=(c&&c.ownerName)||'';
+  const body='Dear '+shipperName+','
+    +'\n\nPlease find attached the Proof of Delivery for the following load:'
+    +'\n\nRoute:     '+route+poRef
+    +'\nDate:      '+(l.date||'')
+    +pickedUpLine+deliveredLine
+    +'\nPhotos:    '+l.pods.length+' attached'
+    +'\n\nPlease confirm receipt at your earliest convenience.'
+    +'\n\nSincerely,\n'+sig;
+  return{toEmail,ccEmail,subject,body,route,poRef};
+}
+
+async function sendPOD(loadId){
+  const l=S.loads.find(x=>x.id===loadId);
+  if(!l||!l.pods||l.pods.length===0){alert('No POD photos to send.');return;}
+  _podSendLoadId=loadId;
+  const{toEmail,ccEmail,subject,body}=buildPODEmailParts(l);
+  const detailsEl=document.getElementById('pod-send-details');
+  if(detailsEl){
+    detailsEl.textContent='To:      '+(toEmail||'[no shipper email on file]')
+      +'\nCC:      '+(ccEmail||'[no broker email in Setup]')
+      +'\nSubject: '+subject
+      +'\n\n'+body;
+  }
+  const overlay=document.getElementById('pod-send-overlay');
+  if(overlay)overlay.style.display='flex';
+}
+
+function closePODSend(){
+  const overlay=document.getElementById('pod-send-overlay');
+  if(overlay)overlay.style.display='none';
+  _podSendLoadId=null;
+}
+
+function copyPODRecipients(){
+  const l=S.loads.find(x=>x.id===_podSendLoadId);
+  if(!l)return;
+  const{toEmail,ccEmail}=buildPODEmailParts(l);
+  var text='To: '+toEmail+(ccEmail?'\nCC: '+ccEmail:'');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){alert('Recipients copied to clipboard.');});
+  }else{
+    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    alert('Recipients copied to clipboard.');
+  }
+}
+
+function openPODMailto(){
+  const l=S.loads.find(x=>x.id===_podSendLoadId);
+  if(!l)return;
+  const{toEmail,ccEmail,subject,body}=buildPODEmailParts(l);
+  // Keep URL short (no body) to avoid mailto: length limits in WKWebView
+  var url='mailto:'+encodeURIComponent(toEmail)
+    +(ccEmail?'?cc='+encodeURIComponent(ccEmail)+'&':'?')
+    +'subject='+encodeURIComponent(subject);
+  var a=document.createElement('a');
+  a.href=url;
+  a.style.display='none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){document.body.removeChild(a);},500);
+}
+
+async function sharePODPhotos(){
+  const l=S.loads.find(x=>x.id===_podSendLoadId);
+  if(!l||!l.pods||l.pods.length===0)return;
+  const plugins=window.Capacitor&&window.Capacitor.Plugins;
+  const Share=plugins&&plugins.Share;
+  const Filesystem=plugins&&plugins.Filesystem;
+  if(!Share){alert('Sharing not available on this device.');return;}
+  const{subject,body}=buildPODEmailParts(l);
+  closePODSend();
+  try{
+    var files=[];
+    if(Filesystem){
+      for(var i=0;i<l.pods.length;i++){
+        var base64=l.pods[i].dataUrl.split(',')[1];
+        try{
+          var res=await Filesystem.writeFile({path:'POD_'+_podSendLoadId+'_'+(i+1)+'.jpg',data:base64,directory:'CACHE'});
+          if(res&&res.uri)files.push(res.uri);
+        }catch(fe){console.warn('POD file write:',fe);}
+      }
+    }
+    var shareData={title:subject,text:body,dialogTitle:'Attach POD Photos'};
+    if(files.length>0)shareData.files=files;
+    await Share.share(shareData);
+  }catch(e){
+    if(e&&e.message&&/cancel|dismiss/i.test(e.message))return;
+    alert('Unable to share photos. Please try again.');
+  }
+}
+
+function showTab(t){
+  if(t!=='analyze'){S.af={};S.coData=null;S.emailDraft=null;S.analysisReady=false;S.inputsCollapsed=false;} if(t!=='loads'){S.pendingCOEmail=null;S.pendingAcceptEmail=null;}
+  S.tab=t;expireCounterOffers();
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',['dashboard','analyze','loads','triplog','setup','reports'][i]===t);});
+  render();
+}
+function fmt(n){return'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtN(n,d=2){return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtMi(n){return Math.round(n).toLocaleString('en-US')+' mi';}
+function pf(x){return parseFloat(x)||0;}
+function daysInMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,0).getDate();}
+function cfg(){return S.config||{};}
+function commitField(key,val){S.af[key]=val;render();}
+
+// -- Lease mile tracking ------------------------------------------
+function leaseMileStats(){
+  const c=cfg();
+  if(c.ownership!=='Leased'||!pf(c.leaseTotalMiles))return null;
+  const startingRemaining=pf(c.leaseStartingMiles); // miles user had left when they started tracking
+  const totalIncluded=pf(c.leaseTotalMiles);        // total miles in lease contract
+  const milesUsedSinceSetup=S.loads
+    .filter(l=>l.status==='accepted')
+    .reduce((sum,l)=>sum+pf(l.totalMiles),0);
+  // Miles already used before setup = totalIncluded - startingRemaining
+  const preSetupUsed=Math.max(0,totalIncluded-startingRemaining);
+  const totalUsed=preSetupUsed+milesUsedSinceSetup;
+  const remaining=Math.max(0,totalIncluded-totalUsed);
+  const overageMiles=Math.max(0,totalUsed-totalIncluded);
+  const pctUsed=totalIncluded>0?Math.min(100,(totalUsed/totalIncluded)*100):0;
+  const warnThreshold=pf(c.leaseMileWarnPct||80);
+  const isOver=overageMiles>0;
+  const isWarn=!isOver&&pctUsed>=warnThreshold;
+  return{totalIncluded,totalUsed,remaining,overageMiles,pctUsed,isOver,isWarn,warnThreshold,milesUsedSinceSetup,preSetupUsed};
+}
+
+function leaseMileOverageCost(tripMiles){
+  const c=cfg();
+  if(c.ownership!=='Leased')return 0;
+  const stats=leaseMileStats();
+  if(!stats||!pf(c.mileageRate))return 0;
+  if(!stats.isOver&&stats.remaining>=tripMiles)return 0; // all miles included
+  const overageInThisTrip=stats.isOver?tripMiles:Math.max(0,tripMiles-stats.remaining);
+  return overageInThisTrip*pf(c.mileageRate);
+}
+
+// -- Calculations -------------------------------------------------
+function calcHOS(totalMiles){
+  const drivingDays=Math.ceil(totalMiles/MILES_PER_DAY);
+  return{drivingDays,overnights:Math.max(0,drivingDays-1),totalHours:totalMiles/MAX_SPEED,exceedsOneDay:drivingDays>1};
+}
+function calcProration(tripDays){
+  const c=cfg();if(!c.ownership)return 0;
+  let t=0;const dim=daysInMonth(new Date());
+  if((c.ownership==='Financed'||c.ownership==='Leased')&&pf(c.monthlyPayment)) t+=pf(c.monthlyPayment)/dim*pf(tripDays);
+  if(c.ownership==='Rented'&&pf(c.weeklyRate)) t+=pf(c.weeklyRate)/7*pf(tripDays);
+  return t;
+}
+function calcLoad(f){
+  const c=cfg();
+  if(!f.rate||!f.tripMiles||!f.dieselPrice)return null;
+  const totalMiles=pf(f.deadheadMiles)+pf(f.tripMiles)+pf(f.returnMiles);
+  const hos=calcHOS(totalMiles);
+  const tripDays=pf(f.tripDaysOverride)||hos.drivingDays;
+  const overnights=Math.max(0,tripDays-1);
+  const motelRate=pf(f.motelRateOverride)||pf(c.defaultMotelRate||0);
+  const motelCost=overnights*motelRate;
+  const gallons=totalMiles/Math.max(pf(c.mpg||1),0.1);
+  const gasCost=gallons*pf(f.dieselPrice);
+  // Mileage cost: for Leased -- only overage miles charged; for Rented -- all miles charged
+  let milesCost=0;
+  if(c.ownership==='Leased') milesCost=leaseMileOverageCost(totalMiles);
+  else if(c.ownership==='Rented') milesCost=totalMiles*pf(c.mileageRate);
+  const vehicleProration=calcProration(tripDays);
+  const brokerFeeAmt=pf(f.brokerFeeOverride)||(pf(c.brokerFeeRate||0)/100*pf(f.rate));
+  const tolls=pf(f.tolls),parking=pf(f.parking),trashFee=pf(f.trashFee),detention=pf(f.detention),twoMan=pf(f.twoMan),factoringFee=pf(f.factoringFee);
+  // Type: 'included' = affects profit (Rate Confirmation); 'addon' = pass-through, does not affect profit
+  const trashType=f.trashFeeType||'included';
+  const detentionType=f.detentionType||'included';
+  const twoManType=f.twoManType||'included';
+  const trashFeeExp=trashType==='included'?trashFee:0;
+  const detentionExp=detentionType==='included'?detention:0;
+  const twoManExp=twoManType==='included'?twoMan:0;
+  const dim2=daysInMonth(new Date());
+  const insuranceProration=pf(c.monthlyInsurance)>0?pf(c.monthlyInsurance)/dim2*tripDays:0;
+  const totalExpenses=gasCost+milesCost+vehicleProration+insuranceProration+brokerFeeAmt+tolls+parking+trashFeeExp+detentionExp+twoManExp+motelCost+factoringFee;
+  const profit=pf(f.rate)-totalExpenses;
+  const rpm=totalMiles>0?profit/totalMiles:0;
+  const targetMargin=pf(f.targetMargin||c.targetMargin||0);
+  const minRPM=pf(c.minRPM||0);
+  // New counteroffer formula:
+  // DH+Return rate/mile = (fuelPrice / mpg) x 2
+  // Counteroffer = dhReturnRPM x (dhMiles + returnMiles) + tripMiles x minRPM
+  const mpg=Math.max(pf(c.mpg||1),0.1);
+  const fuelPriceVal=pf(f.dieselPrice);
+  const dhReturnMiles=pf(f.deadheadMiles)+pf(f.returnMiles);
+  const dhReturnRPM=fuelPriceVal>0?(fuelPriceVal/mpg)*2:0;
+  const counterofferRate=dhReturnRPM*dhReturnMiles + pf(f.tripMiles)*minRPM;
+  // Load meets threshold when offered rate >= counteroffer rate
+  const marginMet=counterofferRate>0?pf(f.rate)>=counterofferRate:false;
+  const rateByExpenses=counterofferRate; // kept for reference display
+  const rateByRPM=counterofferRate;
+  const leaseStats=leaseMileStats();
+  const leaseOverageMilesOnTrip=c.ownership==='Leased'&&leaseStats?Math.max(0,totalMiles-(leaseStats.remaining)):0;
+  return{totalMiles,hos,tripDays,overnights,motelCost,motelRate,gallons,gasCost,milesCost,vehicleProration,insuranceProration,brokerFeeAmt,tolls,parking,trashFee,trashType,detention,detentionType,twoMan,twoManType,factoringFee,totalExpenses,profit,rpm,counterofferRate,rateByExpenses,rateByRPM,targetMargin,minRPM,marginMet,leaseOverageMilesOnTrip};
+}
+
+function getPeriodLoads(period){
+  const acc=S.loads.filter(l=>l.status==='accepted'),now=new Date();
+  return acc.filter(l=>{
+    const d=new Date(l.date);
+    if(period==='week'){const s=new Date(now);s.setDate(now.getDate()-now.getDay());s.setHours(0,0,0,0);return d>=s;}
+    if(period==='prevweek'){const thisSun=new Date(now);thisSun.setDate(now.getDate()-now.getDay());thisSun.setHours(0,0,0,0);const lastSun=new Date(thisSun);lastSun.setDate(thisSun.getDate()-7);return d>=lastSun&&d<thisSun;}
+    if(period==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+    if(period==='prevmonth'){const pm=new Date(now.getFullYear(),now.getMonth()-1,1);return d.getFullYear()===pm.getFullYear()&&d.getMonth()===pm.getMonth();}
+    return d.getFullYear()===now.getFullYear();
+  });
+}
+function sumLoads(loads){
+  return loads.reduce((a,l)=>({revenue:a.revenue+l.rate,gasCost:a.gasCost+l.gasCost,milesCost:a.milesCost+l.milesCost,vehicleProration:a.vehicleProration+l.vehicleProration,insurance:a.insurance+(l.insuranceProration||0),brokerFee:a.brokerFee+l.brokerFeeAmt,tolls:a.tolls+l.tolls,parking:a.parking+l.parking,trashFee:a.trashFee+l.trashFee,detention:a.detention+(l.detention||0),twoMan:a.twoMan+(l.twoMan||0),factoringFee:a.factoringFee+(l.factoringFee||0),motelCost:a.motelCost+(l.motelCost||0),totalExpenses:a.totalExpenses+l.totalExpenses,profit:a.profit+l.profit,miles:a.miles+l.totalMiles}),
+  {revenue:0,gasCost:0,milesCost:0,vehicleProration:0,insurance:0,brokerFee:0,tolls:0,parking:0,trashFee:0,detention:0,twoMan:0,factoringFee:0,motelCost:0,totalExpenses:0,profit:0,miles:0});
+}
+
+// -- Lease meter widget -------------------------------------------
+function leaseMeterHtml(stats){
+  if(!stats)return'';
+  const pct=Math.min(100,stats.pctUsed);
+  const barClass=stats.isOver?'lease-bar-over':stats.isWarn?'lease-bar-warn':'lease-bar-ok';
+  const statusColor=stats.isOver?'var(--danger)':stats.isWarn?'var(--accent)':'var(--accent2)';
+  const statusLabel=stats.isOver?'OVER LIMIT':stats.isWarn?'WARNING':'ON TRACK';
+  return`
+<div class="lease-meter-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+    <div class="lease-meter-title" style="color:${statusColor};margin-bottom:0;">LEASE MILES ${statusLabel}</div>
+    <div style="font-family:var(--fh);font-size:13px;font-weight:700;color:${statusColor}">${pct.toFixed(1)}%</div>
+  </div>
+  <div class="lease-bar-track"><div class="lease-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+  <div class="lease-stats">
+    <span>${fmtMi(stats.totalUsed)} used</span>
+    <span>${fmtMi(stats.totalIncluded)} total</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+    <div style="background:var(--surface2);border-radius:7px;padding:9px;">
+      <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Remaining</div>
+      <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:${stats.isOver?'var(--danger)':'var(--accent2)'};">${fmtMi(stats.remaining)}</div>
+    </div>
+    <div style="background:var(--surface2);border-radius:7px;padding:9px;">
+      <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${stats.isOver?'Overage Miles':'Since Tracking'}</div>
+      <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:${stats.isOver?'var(--danger)':'var(--text)'};">${fmtMi(stats.isOver?stats.overageMiles:stats.milesUsedSinceSetup)}</div>
+    </div>
+  </div>
+  ${stats.isOver?`<div class="alert alert-danger" style="margin-top:10px;margin-bottom:0;">${fmtMi(stats.overageMiles)} over lease limit. All trip miles now charged at the overage rate.</div>`:''}
+  ${stats.isWarn&&!stats.isOver?`<div class="alert alert-warn" style="margin-top:10px;margin-bottom:0;">${pct.toFixed(1)}% of lease miles used -- approaching your ${stats.warnThreshold}% warning threshold.</div>`:''}
+</div>`;
+}
+
+// -- API helpers --------------------------------------------------
+// JSONP helper -- bypasses CORS entirely, works from file:// and https://
+function jsonpFetch(url,cbParam='callback'){
+  return new Promise((resolve,reject)=>{
+    const name='_jcb'+Date.now()+'_'+Math.floor(Math.random()*9999);
+    const t=setTimeout(()=>{cleanup();reject(new Error('timeout'));},10000);
+    function cleanup(){try{delete window[name];if(s.parentNode)s.parentNode.removeChild(s);}catch(e){}clearTimeout(t);}
+    window[name]=(data)=>{cleanup();resolve(data);};
+    const s=document.createElement('script');
+    s.onerror=()=>{cleanup();reject(new Error('load error'));};
+    s.src=url+(url.includes('?')?'&':'?')+cbParam+'='+name;
+    document.head.appendChild(s);
+  });
+}
+async function fetchDieselPrice(zip){
+  try{
+    // EIA national average via direct fetch (works on HTTPS hosted)
+    const r=await fetch('https://api.eia.gov/v2/petroleum/pri/gnd/data/?api_key=DEMO_KEY&frequency=weekly&data[0]=value&facets[product][]=DPU&sort[0][column]=period&sort[0][direction]=desc&length=1');
+    if(r.ok){const d=await r.json();const price=d&&d.response&&d.response.data&&d.response.data[0]&&d.response.data[0].value;if(price)return parseFloat(price);}
+  }catch(e){}
+  try{
+    const url='https://api.eia.gov/v2/petroleum/pri/gnd/data/?api_key=DEMO_KEY&frequency=weekly&data[0]=value&facets[product][]=DPU&sort[0][column]=period&sort[0][direction]=desc&length=1';
+    const r=await fetch('https://corsproxy.io/?'+encodeURIComponent(url));
+    if(r.ok){const d=await r.json();const price=d&&d.response&&d.response.data&&d.response.data[0]&&d.response.data[0].value;if(price)return parseFloat(price);}
+  }catch(e){}
+  return null;
+}
+async function fetchMarketRate(pickup,dropoff,miles){return null;}
+function haversine(lat1,lon1,lat2,lon2){
+  const R=3959,toR=Math.PI/180;
+  const dLat=(lat2-lat1)*toR,dLon=(lon2-lon1)*toR;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function parseAddressParts(q){
+  // Normalize: trim, collapse spaces, strip trailing commas/spaces
+  q=q.trim().replace(/\s+/g,' ').replace(/[,\s]+$/,'');
+  // Split on commas
+  const parts=q.split(',').map(p=>p.trim()).filter(Boolean);
+  if(parts.length>=3){
+    // "Street, City, State [Zip]"
+    const statePart=parts[2].replace(/\s*\d{5}(-\d{4})?$/,'').trim();
+    return{street:parts[0],city:parts[1],state:statePart};
+  }else if(parts.length===2){
+    // "City, State [Zip]"
+    const statePart=parts[1].replace(/\s*\d{5}(-\d{4})?$/,'').trim();
+    return{city:parts[0],state:statePart};
+  }
+  return{raw:q};
+}
+async function nominatimFetch(url){
+  // Try JSONP first (works from file://)
+  try{
+    const d=await jsonpFetch(url,'json_callback');
+    const r=Array.isArray(d)?d[0]:d;
+    if(r&&r.lat)return r;
+  }catch(e){}
+  // Direct fetch
+  try{
+    const r=await fetch(url,{headers:{"User-Agent":"KBCooperLoadAnalyzer/1.0 (kirby.cooper@kbcooperenterprises.com)"}});
+    if(r.ok){const d=await r.json();if(d[0])return d[0];}
+  }catch(e){}
+  // CORS proxy fallback
+  try{
+    const r=await fetch('https://corsproxy.io/?'+encodeURIComponent(url));
+    if(r.ok){const d=await r.json();if(d[0])return d[0];}
+  }catch(e){}
+  return null;
+}
+async function geocode(q){
+  const addr=parseAddressParts(q);
+  const BASE='https://nominatim.openstreetmap.org/search';
+  const COMMON='&format=json&limit=1&addressdetails=0&countrycodes=us';
+  // 1. Structured search (most reliable for full addresses)
+  if(addr.city&&addr.state){
+    const streetParam=addr.street?`&street=${encodeURIComponent(addr.street)}`:'';
+    const structuredUrl=`${BASE}?city=${encodeURIComponent(addr.city)}&state=${encodeURIComponent(addr.state)}${streetParam}${COMMON}`;
+    const r1=await nominatimFetch(structuredUrl);
+    if(r1)return r1;
+    await new Promise(res=>setTimeout(res,1100));
+  }
+  // 2. Free-form search with USA appended
+  const freeQ=addr.raw?addr.raw:([addr.street,addr.city,addr.state].filter(Boolean).join(', '));
+  const withUSA=freeQ.replace(/[,\s]*(USA|United States)$/i,'').trim()+', USA';
+  const freeUrl=`${BASE}?q=${encodeURIComponent(withUSA)}${COMMON}`;
+  return await nominatimFetch(freeUrl);
+}
+async function fetchRouteMiles(pickup,dropoff){
+  try{
+    const p1=await geocode(pickup);
+    await new Promise(r=>setTimeout(r,1100)); // respect Nominatim 1 req/sec rate limit
+    const p2=await geocode(dropoff);
+    if(!p1||!p2)return null;
+    const lat1=parseFloat(p1.lat),lon1=parseFloat(p1.lon);
+    const lat2=parseFloat(p2.lat),lon2=parseFloat(p2.lon);
+    // Try OSRM direct fetch
+    try{
+      const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`);
+      if(r.ok){
+        const d=await r.json();
+        if(d&&d.routes&&d.routes[0]){
+          const miles=d.routes[0].distance*0.000621371;
+          const hrs=Math.floor(d.routes[0].duration/3600);
+          const mins=Math.round((d.routes[0].duration%3600)/60);
+          return{miles:Math.round(miles),duration:`${hrs}h ${mins}m`};
+        }
+      }
+    }catch(e){}
+    // Fallback: OSRM via corsproxy
+    try{
+      const osrmUrl=`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
+      const r=await fetch('https://corsproxy.io/?'+encodeURIComponent(osrmUrl));
+      if(r.ok){
+        const d=await r.json();
+        if(d&&d.routes&&d.routes[0]){
+          const miles=d.routes[0].distance*0.000621371;
+          const hrs=Math.floor(d.routes[0].duration/3600);
+          const mins=Math.round((d.routes[0].duration%3600)/60);
+          return{miles:Math.round(miles),duration:`${hrs}h ${mins}m`};
+        }
+      }
+    }catch(e){}
+    // Last resort: Haversine straight-line x 1.25 road factor
+    const straight=haversine(lat1,lon1,lat2,lon2);
+    const estimated=Math.round(straight*1.25);
+    return{miles:estimated,duration:'est.',isEstimate:true};
+  }catch(e){console.error('Route lookup error:',e);}
+  return null;
+}
+async function generateCounteroffer(f,a){
+  const marketData=await fetchMarketRate(f.pickupCity,f.dropoffCity,a.totalMiles);
+  const marketRate=marketData?marketData.ratePerMile*a.totalMiles:null;
+  const suggested=Math.max(a.counterofferRate,marketRate||0);
+  S.coData={...a,marketData,f,marketRate,suggestedRate:suggested};render();
+}
+
+function buildSignature(){
+  const c=cfg();
+  let sig=c.brokerCompany||'[Broker Company]';
+  if(c.brokerMC)sig+=`\nMC #: ${c.brokerMC}`;
+  if(c.brokerEmail)sig+=`\nEmail: ${c.brokerEmail}`;
+  return sig;
+}
+function buildEmailDraft(type,f,coData){
+  const c=cfg();
+  const shipperName=f.shipperContact||'Shipper';
+  const company=f.shipperCompany||'your company';
+  const route=`${f.pickupCity||'origin'} to ${f.dropoffCity||'destination'}`;
+  const poRef=f.poNumber?` (PO #${f.poNumber})`:'';
+  const sig=buildSignature();
+  if(type==='accept'){
+    return`To: ${f.shipperEmail||'[shipper email]'}
+CC: ${c.brokerEmail||'[broker email]'}
+Subject: Load Acceptance - ${route}${poRef}
+
+Dear ${shipperName},
+
+I am writing to confirm acceptance of the load from ${route}${poRef} at the agreed rate of ${fmt(pf(f.rate))}.
+
+We look forward to completing this shipment professionally and on time. Please send over any additional load details, pickup instructions, or documentation required to proceed.
+
+Thank you for the opportunity to work with ${company}.
+
+Sincerely,
+${sig}`;
+  } else {
+    const suggested=fmt((coData&&coData.manualRate)||(coData&&coData.suggestedRate)||pf(f.rate)*1.1);
+    return`To: ${f.shipperEmail||'[shipper email]'}
+CC: ${c.brokerEmail||'[broker email]'}
+Subject: Load Rate Counteroffer - ${route}${poRef}
+
+Dear ${shipperName},
+
+Thank you for the load opportunity from ${route}${poRef}. After reviewing the details, we respectfully submit the following counteroffer.
+
+Our counteroffer for this load is ${suggested}.
+
+We remain very interested in completing this load and look forward to your response.
+
+Sincerely,
+${sig}`;
+  }
+}
+function openEmailClient(draft){
+  const lines=draft.split('\n');
+  const to=(lines[0]||'').replace('To: ','').trim();
+  const cc=(lines[1]||'').replace('CC: ','').trim();
+  const subj=(lines[2]||'').replace('Subject: ','').trim();
+  const body=lines.slice(4).join('\n');
+  window.location.href=`mailto:${encodeURIComponent(to)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+}
+
+function thresholdAlert(rpm,f){
+  const c=cfg();if(!c.minRPM)return'';
+  const min=pf(c.minRPM);
+  const mpg=Math.max(pf(c.mpg||1),0.1);
+  const fuelPrice=pf((f&&f.dieselPrice)||0);
+  const dhReturn=pf((f&&f.deadheadMiles)||0)+pf((f&&f.returnMiles)||0);
+  const tripMi=pf((f&&f.tripMiles)||0);
+  const needed=fuelPrice>0?((fuelPrice/mpg)*2*dhReturn)+(tripMi*min):tripMi*min;
+  const rate=pf((f&&f.rate)||0);
+  const meets=needed>0?rate>=needed:rpm>=min;
+  return`<div class="threshold-alert ${meets?'threshold-pass':'threshold-fail'}" style="justify-content:space-between;">
+    <span>${meets?'PASS Meets minimum threshold':'FAIL Below minimum threshold'}</span>
+    ${needed>0?`<span style="font-weight:700;">${fmt(rate)} vs ${fmt(needed)} needed</span>`:`<span style="font-weight:700;">${fmtN(rpm,3)}/mi vs ${fmtN(min,3)}/mi min</span>`}
+  </div>`;
+}
+function hosBlock(a,f){
+  const hos=a.hos,isOverride=!!pf(f.tripDaysOverride);
+  const cls=hos.exceedsOneDay?'hos-box hos-warn':'hos-box';
+  return`
+<div class="${cls}">
+  <div class="hos-title">FEDERAL HOS ANALYSIS${isOverride?' (DAYS OVERRIDDEN)':''}</div>
+  <div class="info-row"><span class="info-key">Est. Drive Time</span><span class="info-val">${fmtN(hos.totalHours,1)} hrs</span></div>
+  <div class="info-row"><span class="info-key">Days Required (10 hr @ 75 mph)</span><span class="info-val">${hos.drivingDays} day${hos.drivingDays>1?'s':''}</span></div>
+  <div class="info-row"><span class="info-key">Overnight Stays</span><span class="info-val" style="color:${a.overnights>0?'var(--accent)':'var(--accent2)'}">${a.overnights}</span></div>
+  ${a.overnights>0?`<div class="info-row"><span class="info-key">Motel (${a.overnights} nights @ ${fmt(a.motelRate)})</span><span class="info-val" style="color:var(--danger)">-${fmt(a.motelCost)}</span></div>`:''}
+  ${hos.exceedsOneDay?`<div style="font-size:11px;color:var(--accent);margin-top:6px;">Multi-day load. Overnight costs included in expense total.</div>`:''}
+  <div class="override-row">
+    <span style="font-size:11px;color:var(--muted);white-space:nowrap;">Override days:</span>
+    <input class="form-input" type="number" min="1" style="width:70px;padding:5px 8px;font-size:12px;" placeholder="${hos.drivingDays}" value="${f.tripDaysOverride||''}"
+      oninput="S.af.tripDaysOverride=this.value"
+      onchange="commitField('tripDaysOverride',this.value)"
+      onkeydown="if(event.key==='Enter'){commitField('tripDaysOverride',this.value);this.blur();}"/>
+    <span style="font-size:10px;color:var(--muted)">blank = auto</span>
+  </div>
+</div>`;
+}
+function coExpiryInfo(l){
+  if(!l.counterofferSentAt)return null;
+  const remaining=CO_EXPIRY_MS-(Date.now()-l.counterofferSentAt);
+  if(remaining<=0)return{pct:0,label:'Expired'};
+  const hrs=Math.floor(remaining/3600000),mins=Math.floor((remaining%3600000)/60000);
+  return{pct:Math.max(0,(remaining/CO_EXPIRY_MS)*100),label:`${hrs}h ${mins}m remaining`};
+}
+
+// -- Render: Dashboard --------------------------------------------
+function fixedCostBenchmarks(){
+  const c=cfg();
+  let monthly=0;
+  if((c.ownership==='Financed'||c.ownership==='Leased')&&pf(c.monthlyPayment)) monthly+=pf(c.monthlyPayment);
+  if(c.ownership==='Rented'&&pf(c.weeklyRate)) monthly+=pf(c.weeklyRate)*4.33;
+  if(pf(c.monthlyInsurance)) monthly+=pf(c.monthlyInsurance);
+  if(!monthly)return null;
+  return{weekly:monthly/4.33,monthly,yearly:monthly*12};
+}
+function renderDashboard(){
+  const loads=getPeriodLoads(S.dp),t=sumLoads(loads),c=cfg();
+  const allAcc=S.loads.filter(l=>l.status==='accepted');
+  const allCo=S.loads.filter(l=>l.status==='counteroffer');
+  const allDec=S.loads.filter(l=>l.status==='declined');
+  const notPickedUp=allAcc.filter(l=>!l.pickedUpAt);
+  const inTransit=allAcc.filter(l=>l.pickedUpAt&&!l.deliveredAt);
+  const leaseStats=leaseMileStats();
+  document.getElementById('hv').innerHTML=c.vehicleType?`<span style="color:var(--accent)">${c.vehicleType}</span><br>${c.ownership||''}`:'<span style="color:var(--danger)">No setup</span>';
+  return`
+<div class="section-title">Summary</div>
+<div style="display:flex;gap:5px;margin-bottom:10px;">
+  <button class="period-btn ${S.dp==='week'?'active':''}" onclick="S.dp='week';render()">THIS WEEK</button>
+  <button class="period-btn ${S.dp==='prevweek'?'active':''}" onclick="S.dp='prevweek';render()">PREV WEEK</button>
+  <button class="period-btn ${S.dp==='month'?'active':''}" onclick="S.dp='month';render()">THIS MONTH</button>
+  <button class="period-btn ${S.dp==='prevmonth'?'active':''}" onclick="S.dp='prevmonth';render()">PREV MONTH</button>
+  <button class="period-btn ${S.dp==='year'?'active':''}" onclick="S.dp='year';render()">YEAR</button>
+</div>
+<div class="card big-profit">
+  <div class="big-profit-label">Estimated Net Profit</div>
+  <div class="big-profit-val ${t.profit>=0?'green':'red'}">${t.profit<0?'-':''}${fmt(t.profit)}</div>
+  <div style="font-size:11px;color:var(--muted);margin-top:3px;">${loads.length} accepted load${loads.length!==1?'s':''}</div>
+</div>
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value amber">${fmt(t.revenue)}</div></div>
+  <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value red">${fmt(t.totalExpenses)}</div></div>
+  <div class="stat-card"><div class="stat-label">Gas Cost</div><div class="stat-value red">${fmt(t.gasCost)}</div></div>
+  <div class="stat-card"><div class="stat-label">Broker Fees</div><div class="stat-value red">${fmt(t.brokerFee)}</div></div>
+  ${t.motelCost>0?`<div class="stat-card"><div class="stat-label">Motel Costs</div><div class="stat-value red">${fmt(t.motelCost)}</div></div>`:''}
+  <div class="stat-card"><div class="stat-label">Total Miles</div><div class="stat-value">${fmtN(t.miles,0)}</div></div>
+  <div class="stat-card"><div class="stat-label">Accepted</div><div class="stat-value blue">${allAcc.length}</div></div>
+  ${allCo.length>0?`<div class="stat-card"><div class="stat-label">Pending CO</div><div class="stat-value purple">${allCo.length}</div></div>`:''}
+</div>
+${(notPickedUp.length>0||inTransit.length>0)?`
+<div class="card" style="margin-bottom:10px;">
+  <div class="sub-section" style="margin-top:0;">ACTIVE LOAD STATUS</div>
+  ${notPickedUp.length>0?`
+  <div class="info-row">
+    <span class="info-key" style="display:flex;align-items:center;gap:5px;">
+      <span class="badge badge-amber" style="font-size:9px;">${notPickedUp.length}</span>
+      Awaiting Pickup
+    </span>
+    <span class="info-val" style="color:var(--accent);font-size:11px;">${notPickedUp.map(l=>`<div>${l.route||'Unnamed'}</div>`).join('')}</span>
+  </div>`:''}
+  ${inTransit.length>0?`
+  <div class="info-row" style="${notPickedUp.length>0?'':''}">
+    <span class="info-key" style="display:flex;align-items:center;gap:5px;">
+      <span class="badge badge-blue" style="font-size:9px;">${inTransit.length}</span>
+      In Transit
+    </span>
+    <span class="info-val" style="color:var(--info);font-size:11px;">${inTransit.map(l=>`<div>${l.route||'Unnamed'}</div>`).join('')}</span>
+  </div>`:''}
+</div>`:''}
+${leaseStats?leaseMeterHtml(leaseStats):''}
+${(()=>{
+  const b=fixedCostBenchmarks();
+  if(!b)return'';
+  const period=S.dp;
+  const expected=period==='week'||period==='prevweek'?b.weekly:period==='month'||period==='prevmonth'?b.monthly:b.yearly;
+  const label=period==='week'?'Weekly':'period'==='month'?'Monthly':'Yearly';
+  const overUnder=t.profit-expected;
+  const isOver=overUnder>=0;
+  const overUnderColor=isOver?'var(--accent2)':'var(--danger)';
+  const overUnderLabel=isOver?'OVER Break Even':'UNDER Break Even';
+  return'<div class="card" style="margin-bottom:10px;">'
+    +'<div class="sub-section" style="margin-top:0;">FIXED OVERHEAD BENCHMARKS</div>'
+    +'<div class="info-row"><span class="info-key">Expected Weekly</span><span class="info-val" style="color:var(--muted)">'+fmt(b.weekly)+'</span></div>'
+    +'<div class="info-row"><span class="info-key">Expected Monthly</span><span class="info-val" style="color:var(--muted)">'+fmt(b.monthly)+'</span></div>'
+    +'<div class="info-row"><span class="info-key">Expected Yearly</span><span class="info-val" style="color:var(--muted)">'+fmt(b.yearly)+'</span></div>'
+    +'<div class="info-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px;"><span class="info-key" style="font-weight:700;">Break Even Point ('+period.charAt(0).toUpperCase()+period.slice(1)+')</span><span class="info-val" style="font-weight:700;color:var(--danger);">'+fmt(expected)+'</span></div>'
+    +'<div style="background:'+(isOver?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.1)')+';border:1px solid '+(isOver?'rgba(16,185,129,0.35)':'rgba(239,68,68,0.35)')+';border-radius:8px;padding:10px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;">'
+    +'<div><div style="font-size:10px;font-weight:700;color:'+overUnderColor+';letter-spacing:0.5px;text-transform:uppercase;">'+overUnderLabel+'</div>'
+    +'<div style="font-size:10px;color:var(--muted);margin-top:2px;">'+(isOver?'Proceeds after fixed costs met':'Still needed to reach break even')+'</div></div>'
+    +'<div style="font-family:var(--fh);font-size:24px;font-weight:700;color:'+overUnderColor+';">'+(isOver?'+':'-')+fmt(Math.abs(overUnder))+'</div>'
+    +'</div>'
+    +'</div>';
+})()}
+${!c.vehicleType?'<div class="alert alert-warn">Complete your setup to enable full analysis.</div>':''}
+${allCo.length>0?`<div class="alert alert-purple">${allCo.length} counteroffer${allCo.length>1?'s':''} awaiting response -- expires in 48 hours.</div>`:''}
+<button class="btn btn-primary btn-full" onclick="showTab('analyze')">+ ANALYZE NEW LOAD</button>`;
+}
+
+// -- Render: Analyze ----------------------------------------------
+function renderAnalyze(){
+  const f=S.af,c=cfg(),a=calcLoad(f);
+  const autoBrokerFee=c.brokerFeeRate&&f.rate?(pf(c.brokerFeeRate)/100*pf(f.rate)):0;
+  const leaseStats=leaseMileStats();
+  const coData=S.coData;
+  let coSection='',emailSection='';
+  if(a&&coData){
+    const coFinalRate=pf(coData.manualRate)||coData.suggestedRate||0;
+    const coProfit=coFinalRate-coData.totalExpenses;
+    const marginMet=coData.marginMet||false;
+    coSection=`
+<div class="counteroffer-box" id="co-section-inner">
+  <div class="counteroffer-title">COUNTEROFFER</div>
+  ${!marginMet?`
+  <div class="info-row"><span class="info-key">Minimum Rate Needed</span><span class="info-val" style="color:var(--accent);font-weight:700;">${fmt(coData.suggestedRate||0)}</span></div>
+  `:`<div class="alert alert-info" style="font-size:11px;margin-bottom:8px;">Load meets your minimum revenue threshold -- enter your counteroffer rate below or accept.</div>`}
+  <div class="form-group" style="margin-top:${marginMet?'0':'10px'};">
+    <label class="form-label" style="color:var(--purple)">MY COUNTEROFFER RATE ($)</label>
+    <input class="form-input" type="number" step="0.01" placeholder="${marginMet?'':(coData.suggestedRate||0).toFixed(2)}" value="${coData.manualRate||''}"
+      style="border-color:rgba(167,139,250,0.4);"
+      onchange="S.coData.manualRate=parseFloat(this.value)||null;render()"
+      onkeydown="if(event.key==='Enter'){S.coData.manualRate=parseFloat(this.value)||null;render();this.blur();}"/>
+    ${marginMet?'':'<div class="calc-hint">Leave blank to use calculated suggestion</div>'}
+  </div>
+  ${coFinalRate>0?`
+  <div class="info-row" style="border-top:1px solid rgba(167,139,250,0.2);margin-top:4px;padding-top:6px;">
+    <span class="info-key" style="font-weight:700;color:var(--text)">Counteroffer Rate</span>
+    <span class="info-val" style="font-size:15px;font-weight:700;color:var(--purple)">${fmt(coFinalRate)}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-key" style="font-weight:700;color:var(--text)">Estimated Profit at CO Rate</span>
+    <span class="info-val" style="font-size:14px;font-weight:700;color:${coProfit>=0?'var(--accent2)':'var(--danger)'}">${coProfit<0?'-':''}${fmt(coProfit)}</span>
+  </div>`:''}
+  <div style="margin-top:10px;"><button class="btn btn-purple btn-full" onclick="showEmailDraft('counter');setTimeout(()=>{const el=document.getElementById('email-section');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80)">DRAFT COUNTEROFFER EMAIL</button></div>
+</div>`;
+  }
+  if(S.emailDraft){
+    emailSection=`
+<div class="card" style="margin-top:10px;">
+  <div class="section-title" style="font-size:12px;margin-bottom:7px;">EMAIL DRAFT -- REVIEW & EDIT</div>
+  <textarea class="form-textarea" id="email-draft-ta" style="min-height:220px;font-size:11px;">${S.emailDraft}</textarea>
+  <div style="display:flex;gap:7px;margin-top:8px;">
+    <button class="btn btn-info" style="flex:1" onclick="sendEmail()">OPEN EMAIL CLIENT</button>
+    <button class="btn btn-outline btn-sm" onclick="S.emailDraft=null;render()">X</button>
+  </div>
+</div>`;
+  }
+  const brokerRef=c.brokerCompany
+    ?`<div class="alert alert-info" style="font-size:11px;margin-bottom:0;">Broker: <strong>${c.brokerCompany}</strong>${c.brokerMC?' MC #'+c.brokerMC:''}${c.brokerFeeRate?' - Fee: '+c.brokerFeeRate+'%':''}</div>`
+    :`<div class="alert alert-warn" style="font-size:11px;margin-bottom:0;">No broker configured. <button class="btn btn-outline btn-sm" onclick="showTab('setup')">Set up -></button></div>`;
+
+  // Lease overage warning on analyze page
+  let leaseWarn='';
+  if(leaseStats&&a){
+    if(leaseStats.isOver){
+      leaseWarn=`<div class="alert alert-danger" style="margin-bottom:0;">Lease limit exceeded -- all ${fmtMi(a.totalMiles)} on this trip are charged at overage rate.</div>`;
+    } else if(a.leaseOverageMilesOnTrip>0){
+      leaseWarn=`<div class="alert alert-warn" style="margin-bottom:0;">This trip uses ${fmtMi(leaseStats.remaining)} included miles + ${fmtMi(a.leaseOverageMilesOnTrip)} overage miles.</div>`;
+    } else if(leaseStats.isWarn){
+      leaseWarn=`<div class="alert alert-warn" style="margin-bottom:0;">${fmtMi(leaseStats.remaining)} lease miles remaining before overage charges apply.</div>`;
+    }
+  }
+
+  // Collapsed input summary bar (shown when analysisReady)
+  const inputSummary=S.analysisReady&&a?`
+<div class="card" style="margin-bottom:10px;cursor:pointer;border-color:rgba(245,158,11,0.3);" onclick="S.inputsCollapsed=!S.inputsCollapsed;render()">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-family:var(--fh);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:0.8px;text-transform:uppercase;">LOAD INPUTS</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">
+        ${f.rate?`<span style="color:var(--text);font-weight:600;">${fmt(pf(f.rate))}</span>`:''}
+        ${f.tripMiles?` . ${f.tripMiles} mi`:''}
+        ${f.dieselPrice?` . $${pf(f.dieselPrice).toFixed(3)}/gal`:''}
+        ${f.pickupCity&&f.dropoffCity?` . ${f.pickupCity} -> ${f.dropoffCity}`:''}
+      </div>
+    </div>
+    <span style="font-size:16px;font-weight:700;color:var(--muted);">${S.inputsCollapsed!==false?'+':'-'}</span>
+  </div>
+</div>`:'';
+  const showInputs=!S.analysisReady||(S.inputsCollapsed===false);
+
+  return`
+<div class="section-title">Analyze Load</div>
+${!c.vehicleType?'<div class="alert alert-warn">Complete your setup first.</div>':''}
+${S.analysisReady&&a?inputSummary:''}
+<div ${showInputs?'':'style="display:none;"'}>
+<div class="card">
+  <div class="sub-section">LOAD INFO</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">PO Number</label><input class="form-input" type="text" placeholder="" value="${f.poNumber||''}" oninput="S.af.poNumber=this.value" tabindex="1"/></div>
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" value="${f.date||new Date().toISOString().split('T')[0]}" oninput="S.af.date=this.value" tabindex="2"/></div>
+  </div>
+  <div class="form-group"><label class="form-label">Route / Description</label><input class="form-input" type="text" placeholder="" value="${f.route||''}" oninput="S.af.route=this.value" tabindex="3"/></div>
+  <div class="form-group">
+    <label class="form-label">Shipper Rate ($)</label>
+    <input class="form-input" type="number" placeholder="" value="${f.rate||''}"
+      oninput="S.af.rate=this.value" tabindex="4"/>
+    <div class="calc-hint">Press Enter or tab to calculate</div>
+  </div>
+</div>
+<div class="card">
+  <div class="sub-section">SHIPPER (CLIENT)</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Company</label><input class="form-input" type="text" placeholder="" value="${f.shipperCompany||''}" oninput="S.af.shipperCompany=this.value" tabindex="5"/></div>
+    <div class="form-group"><label class="form-label">Contact Name</label><input class="form-input" type="text" placeholder="" value="${f.shipperContact||''}" oninput="S.af.shipperContact=this.value" tabindex="6"/></div>
+  </div>
+  <div class="form-group" style="margin-bottom:0"><label class="form-label">Shipper Email</label><input class="form-input" type="email" placeholder="" value="${f.shipperEmail||''}" oninput="S.af.shipperEmail=this.value" tabindex="7"/></div>
+</div>
+<div class="card">
+  <div class="sub-section">PICKUP & DROPOFF</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Pickup Location</label>
+      <input class="form-input" type="text" placeholder="e.g. 207 S Division St, Hendricks, MN" value="${f.pickupCity||''}" oninput="S.af.pickupCity=this.value" tabindex="8"/>
+      <div class="calc-hint">Full address or City, State -- e.g. 207 S Division St, Hendricks, MN</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dropoff Location</label>
+      <input class="form-input" type="text" placeholder="e.g. 617 Sutherland Dr, Woodbury, MN" value="${f.dropoffCity||''}" oninput="S.af.dropoffCity=this.value" tabindex="9"/>
+      <div class="calc-hint">Full address or City, State -- e.g. 617 Sutherland Dr, Woodbury, MN</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap;">
+    <button class="map-btn" onclick="lookupRoute()">CALCULATE ROUTE MILES</button>
+    ${f.routeInfo?`<a class="map-btn" href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(f.pickupCity)}&destination=${encodeURIComponent(f.dropoffCity)}&travelmode=driving" target="_blank" rel="noopener">Open in Maps</a>`:''}
+  </div>
+  <div id="route-status" style="font-size:11px;color:var(--muted);margin-top:6px;">${f.routeInfo?`<span style="color:var(--accent2)">${fmtN(f.routeInfo.miles,0)} mi - ${f.routeInfo.duration}</span>`:'Enter pickup & dropoff to calculate route miles'}</div>
+</div>
+<div class="card">
+  <div class="sub-section">MILEAGE</div>
+  <div class="form-group"><label class="form-label">Dead Head To (mi)</label>
+    <input class="form-input" type="number" placeholder="0" value="${f.deadheadMiles||''}"
+      oninput="S.af.deadheadMiles=this.value" tabindex="11"/>
+  </div>
+  <div class="form-group"><label class="form-label">Trip Miles</label>
+    <input class="form-input" type="number" placeholder="${f.routeInfo?Math.round(f.routeInfo.miles):''}" value="${f.tripMiles||''}"
+      oninput="S.af.tripMiles=this.value" tabindex="12"/>
+  </div>
+  <div class="form-group" style="margin-bottom:0"><label class="form-label">Return Mileage (mi)</label>
+    <input class="form-input" type="number" placeholder="0" value="${f.returnMiles||''}"
+      oninput="S.af.returnMiles=this.value" tabindex="13"/>
+  </div>
+</div>
+${leaseWarn?`<div style="margin-bottom:9px;">${leaseWarn}</div>`:''}
+<div class="card">
+  <div class="sub-section">FUEL PRICE</div>
+
+  <div class="form-group">
+    <label class="form-label">Your Location (City, State)</label>
+    <input class="form-input" type="text" placeholder="e.g. St. Paul, MN" value="${f.dieselCity||''}" oninput="S.af.dieselCity=this.value" id="diesel-city-in" tabindex="14"/>
+    <div class="calc-hint">Enter your current city and state to look up local prices</div>
+  </div>
+  <button class="btn btn-outline btn-sm btn-full" onclick="doLookupDiesel()" id="diesel-btn" style="margin-bottom:8px;">CHECK LOCAL ${(f.fuelType||cfg().fuelType||'DIESEL').toUpperCase()} PRICES</button>
+  <div id="diesel-status" style="font-size:11px;color:var(--muted);margin:5px 0;">${f.dieselPrice?`<span style="color:var(--accent2)">$${pf(f.dieselPrice).toFixed(3)}/gal (${f.fuelType||'Diesel'})</span>`:'Select fuel type, enter your city, then check prices'}</div>
+  <div class="form-group" style="margin-bottom:0"><label class="form-label">${(f.fuelType||cfg().fuelType||'Diesel')} Price per Gallon ($/gal)</label>
+    <input class="form-input" type="number" step="0.001" placeholder="" value="${f.dieselPrice||''}"
+      oninput="S.af.dieselPrice=this.value" tabindex="15"/>
+    <div class="calc-hint">Enter the price you see from the lookup</div>
+  </div>
+</div>
+<div class="card">
+  <div class="sub-section">ADDITIONAL EXPENSES</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tolls ($)</label>
+      <input class="form-input" type="number" step="0.01" placeholder="0" value="${f.tolls||''}"
+        oninput="S.af.tolls=this.value" tabindex="16"/>
+    </div>
+    <div class="form-group"><label class="form-label">Parking ($)</label>
+      <input class="form-input" type="number" step="0.01" placeholder="0" value="${f.parking||''}"
+        oninput="S.af.parking=this.value" tabindex="17"/>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">Trash Dumping Fee ($)</label>
+    <input class="form-input" type="number" step="0.01" placeholder="0" value="${f.trashFee||''}"
+      oninput="S.af.trashFee=this.value" tabindex="18"/>
+    <div class="type-toggle">
+      <button class="type-btn ${(f.trashFeeType||'included')==='included'?'active-rate':''}" onclick="S.af.trashFeeType='included';render()">RATE CONF.</button>
+      <button class="type-btn ${(f.trashFeeType||'included')==='addon'?'active-addon':''}" onclick="S.af.trashFeeType='addon';render()">ADD-ON</button>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">Detention Pay ($)</label>
+    <input class="form-input" type="number" step="0.01" placeholder="0" value="${f.detention||''}"
+      oninput="S.af.detention=this.value" tabindex="19"/>
+    <div class="type-toggle">
+      <button class="type-btn ${(f.detentionType||'included')==='included'?'active-rate':''}" onclick="S.af.detentionType='included';render()">RATE CONF.</button>
+      <button class="type-btn ${(f.detentionType||'included')==='addon'?'active-addon':''}" onclick="S.af.detentionType='addon';render()">ADD-ON</button>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">2 Man Support Amount ($)</label>
+    <input class="form-input" type="number" step="0.01" placeholder="0" value="${f.twoMan||''}"
+      oninput="S.af.twoMan=this.value" tabindex="20"/>
+    <div class="type-toggle">
+      <button class="type-btn ${(f.twoManType||'included')==='included'?'active-rate':''}" onclick="S.af.twoManType='included';render()">RATE CONF.</button>
+      <button class="type-btn ${(f.twoManType||'included')==='addon'?'active-addon':''}" onclick="S.af.twoManType='addon';render()">ADD-ON</button>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:0"><label class="form-label">Same/Next Day Factoring Fee ($)</label>
+    <input class="form-input" type="number" step="0.01" placeholder="0" value="${f.factoringFee||''}"
+      oninput="S.af.factoringFee=this.value" tabindex="21"/>
+  </div>
+</div>
+${S.analysisReady&&a?hosBlock(a,f):''}
+<div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" placeholder="Load notes, special instructions..." oninput="S.af.notes=this.value" tabindex="22">${f.notes||''}</textarea></div>
+<button class="btn btn-primary btn-full" style="margin-bottom:10px;" onclick="S.analysisReady=true;S.inputsCollapsed=true;render();setTimeout(()=>{const el=document.getElementById('analysis-result');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80)">ANALYZE LOAD</button>
+</div>
+${S.analysisReady&&a?`
+<div class="card" id="analysis-result">
+  <div class="section-title" style="font-size:12px;margin-bottom:8px;">ESTIMATED PROFITABILITY ANALYSIS${f.poNumber?` <span class="po-badge">PO #${f.poNumber}</span>`:''}</div>
+  ${thresholdAlert(a.rpm,f)}
+  <div class="analysis-box">
+    <div class="sub-section" style="margin-top:0;">REVENUE</div>
+    <div class="info-row"><span class="info-key">Shipper Rate</span><span class="info-val" style="color:var(--accent)">${fmt(pf(f.rate))}</span></div>
+    <div class="sub-section">TRIP DETAILS</div>
+    <div class="info-row"><span class="info-key">Total Miles</span><span class="info-val">${fmtN(a.totalMiles,1)} mi</span></div>
+    <div class="info-row"><span class="info-key">Diesel Used</span><span class="info-val">${fmtN(a.gallons,2)} gal</span></div>
+    <div class="info-row"><span class="info-key">Trip Days</span><span class="info-val">${a.tripDays} day${a.tripDays>1?'s':''}</span></div>
+    <div class="info-row"><span class="info-key">Overnights</span><span class="info-val">${a.overnights}</span></div>
+    ${cfg().ownership==='Leased'&&leaseStats?`<div class="info-row"><span class="info-key">Lease Miles Remaining After</span><span class="info-val" style="color:${Math.max(0,leaseStats.remaining-a.totalMiles)>0?'var(--accent2)':'var(--danger)'}">${fmtMi(Math.max(0,leaseStats.remaining-a.totalMiles))}</span></div>`:''}
+    <div class="sub-section">EXPENSES</div>
+    <div class="info-row"><span class="info-key">${f.fuelType||'Diesel'} Cost</span><span class="info-val" style="color:var(--danger)">-${fmt(a.gasCost)}</span></div>
+    ${a.milesCost>0?`<div class="info-row"><span class="info-key">Mileage Cost (overage)</span><span class="info-val" style="color:var(--danger)">-${fmt(a.milesCost)}</span></div>`:''}
+    ${a.milesCost===0&&cfg().ownership==='Leased'?`<div class="info-row"><span class="info-key">Mileage Cost</span><span class="info-val" style="color:var(--accent2)">Included in lease</span></div>`:''}
+    ${a.vehicleProration>0?`<div class="info-row"><span class="info-key">Vehicle Payment (${a.tripDays}d)</span><span class="info-val" style="color:var(--danger)">-${fmt(a.vehicleProration)}</span></div>`:''}
+    ${a.insuranceProration>0?`<div class="info-row"><span class="info-key">Insurance (${a.tripDays}d proration)</span><span class="info-val" style="color:var(--danger)">-${fmt(a.insuranceProration)}</span></div>`:''}
+    <div class="info-row"><span class="info-key">Broker Fee${cfg().brokerFeeRate?' ('+cfg().brokerFeeRate+'%)':''}</span><span class="info-val" style="color:var(--danger)">-${fmt(a.brokerFeeAmt)}</span></div>
+    ${a.motelCost>0?`<div class="info-row"><span class="info-key">Motel (${a.overnights} night${a.overnights>1?'s':''})</span><span class="info-val" style="color:var(--danger)">-${fmt(a.motelCost)}</span></div>`:''}
+    ${a.tolls>0?`<div class="info-row"><span class="info-key">Tolls</span><span class="info-val" style="color:var(--danger)">-${fmt(a.tolls)}</span></div>`:''}
+    ${a.parking>0?`<div class="info-row"><span class="info-key">Parking</span><span class="info-val" style="color:var(--danger)">-${fmt(a.parking)}</span></div>`:''}
+    ${a.trashFee>0?`<div class="info-row"><span class="info-key">Trash Dumping Fee ${a.trashType==='addon'?'<span style="font-size:9px;color:var(--info)">(ADD-ON)</span>':''}</span><span class="info-val" style="color:${a.trashType==='addon'?'var(--info)':'var(--danger)'};">${a.trashType==='addon'?'':'-'}${fmt(a.trashFee)}${a.trashType==='addon'?' billable':''}</span></div>`:''}
+    ${a.detention>0?`<div class="info-row"><span class="info-key">Detention Pay ${a.detentionType==='addon'?'<span style="font-size:9px;color:var(--info)">(ADD-ON)</span>':''}</span><span class="info-val" style="color:${a.detentionType==='addon'?'var(--info)':'var(--danger)'};">${a.detentionType==='addon'?'':'-'}${fmt(a.detention)}${a.detentionType==='addon'?' billable':''}</span></div>`:''}
+    ${a.twoMan>0?`<div class="info-row"><span class="info-key">2 Man Support ${a.twoManType==='addon'?'<span style="font-size:9px;color:var(--info)">(ADD-ON)</span>':''}</span><span class="info-val" style="color:${a.twoManType==='addon'?'var(--info)':'var(--danger)'};">${a.twoManType==='addon'?'':'-'}${fmt(a.twoMan)}${a.twoManType==='addon'?' billable':''}</span></div>`:''}
+    ${a.factoringFee>0?`<div class="info-row"><span class="info-key">Same/Next Day Factoring</span><span class="info-val" style="color:var(--danger)">-${fmt(a.factoringFee)}</span></div>`:''}
+    <div class="info-row" style="border-top:1px solid var(--muted);margin-top:4px;padding-top:6px;"><span class="info-key" style="font-weight:700;color:var(--text)">Total Expenses</span><span class="info-val" style="font-weight:700;color:var(--danger)">-${fmt(a.totalExpenses)}</span></div>
+    <div class="info-row"><span class="info-key" style="font-weight:700;color:var(--text);font-size:13px;">Estimated Profit</span><span class="info-val" style="font-size:15px;font-weight:700;color:${a.profit>=0?'var(--accent2)':'var(--danger)'}">${a.profit<0?'-':''}${fmt(a.profit)}</span></div>
+    <div class="info-row"><span class="info-key">Revenue per Mile</span><span class="info-val" style="color:${cfg().minRPM&&a.rpm<pf(cfg().minRPM)?'var(--danger)':'var(--accent)'}">${fmtN(a.rpm,3)}/mi</span></div>
+  </div>
+  <div style="display:flex;gap:7px;margin-top:10px;">
+    <button class="btn btn-success" style="flex:1" onclick="showEmailDraft('accept');setTimeout(()=>{const el=document.getElementById('email-section');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80)">ACCEPT</button>
+    <button class="btn btn-danger" style="flex:1" onclick="doSaveLoad('declined')">DECLINE</button>
+  </div>
+  <div style="display:flex;gap:7px;margin-top:7px;">
+    <button class="btn btn-purple" style="flex:1" onclick="doGenerateCO();setTimeout(()=>{const el=document.getElementById('co-section');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},300)" id="co-btn">COUNTEROFFER</button>
+    <button class="btn btn-outline btn-sm" style="flex:1" onclick="doSaveLoad('accepted')">ACCEPT (NO EMAIL)</button>
+  </div>
+</div>
+<div id="co-section">${coSection}</div>
+<div id="email-section">${emailSection}</div>`
+:`<div class="alert alert-info">Fill in rate, mileage, and diesel price to see analysis.</div>`}`;
+}
+
+async function lookupRoute(){
+  const f=S.af;
+  if(!f.pickupCity||!f.dropoffCity){const el=document.getElementById('route-status');if(el)el.innerHTML='<span style="color:var(--danger)">Enter both locations first.</span>';return;}
+  const el=document.getElementById('route-status');if(el)el.innerHTML='<span style="color:var(--muted)">Looking up route...</span>';
+  const btn=document.querySelector('[onclick="lookupRoute()"]');if(btn)btn.textContent='...';
+  const res=await fetchRouteMiles(f.pickupCity,f.dropoffCity);
+  if(btn)btn.textContent='CALCULATE ROUTE MILES';
+  if(res){S.af.routeInfo=res;if(!S.af.tripMiles)S.af.tripMiles=Math.round(res.miles);render();if(res.isEstimate&&el)el.innerHTML='<span style="color:var(--accent)">~'+res.miles.toLocaleString()+' mi (estimated -- verify manually)</span>';}
+  else{if(el)el.innerHTML='<span style="color:var(--danger)">Could not locate one or both addresses -- try adding the state (e.g. Hendricks, MN) or enter miles manually.</span>';}
+}
+function doLookupDiesel(){
+  const city=S.af.dieselCity||S.af.pickupCity||'';
+  const el=document.getElementById('diesel-status');
+  if(!city){
+    if(el)el.innerHTML='<span style="color:var(--danger)">Enter your city and state first.</span>';
+    return;
+  }
+  // Open GasBuddy diesel search for the entered city in a new tab
+  const fuelType=S.af.fuelType||cfg().fuelType||'Diesel';
+  const fuelCode=fuelType==='Diesel'?4:1;
+  const gbUrl='https://www.gasbuddy.com/home?search='+encodeURIComponent(city)+'&fuel='+fuelCode;
+  window.open(gbUrl,'_blank');
+  if(el)el.innerHTML='<span style="color:var(--accent)">GasBuddy opened for '+fuelType+' in '+city+' -- enter the price you see above.</span>';
+}
+async function doGenerateCO(){
+  const btn=document.getElementById('co-btn');if(btn)btn.textContent='FETCHING...';
+  const f=S.af,a=calcLoad(f);if(!a)return;
+  await generateCounteroffer(f,a);
+}
+function showEmailDraft(type){S.emailDraft=buildEmailDraft(type,S.af,S.coData);render();}
+function sendEmail(){
+  const ta=document.getElementById('email-draft-ta');if(ta)S.emailDraft=ta.value;
+  if(S.emailDraft&&S.emailDraft.includes('Counteroffer')){doSaveLoad('counteroffer');}
+  else if(S.emailDraft&&S.emailDraft.includes('Load Acceptance')){
+    const draft=S.emailDraft;
+    doSaveLoad('accepted');
+    setTimeout(()=>openEmailClient(draft),300);
+  }
+  else openEmailClient(S.emailDraft);
+}
+async function doSaveLoad(status){
+  const f=S.af,a=calcLoad(f);if(!a)return;
+  const coData=S.coData;
+  const coFinalRate=status==='counteroffer'?(pf((coData&&coData.manualRate)||0)||(coData&&coData.suggestedRate)||0):null;
+  const coProfit=coFinalRate!=null?coFinalRate-a.totalExpenses:null;
+  const load={id:Date.now(),
+    poNumber:f.poNumber||'',date:f.date||new Date().toISOString().split('T')[0],
+    route:f.route||`${f.pickupCity||''}->${f.dropoffCity||''}`.replace(/^->|->$/g,'').trim()||'Unnamed',
+    rate:pf(f.rate),targetMargin:pf(f.targetMargin||cfg().targetMargin||0),
+    shipperCompany:f.shipperCompany||'',shipperContact:f.shipperContact||'',shipperEmail:f.shipperEmail||'',
+    pickupCity:f.pickupCity||'',dropoffCity:f.dropoffCity||'',routeInfo:f.routeInfo||null,
+    deadheadMiles:pf(f.deadheadMiles),tripMiles:pf(f.tripMiles),returnMiles:pf(f.returnMiles),
+    dieselPrice:pf(f.dieselPrice),notes:f.notes||'',trashFeeType:f.trashFeeType||'included',detentionType:f.detentionType||'included',twoManType:f.twoManType||'included',fuelType:f.fuelType||cfg().fuelType||'Diesel',status,
+    counterofferSentAt:status==='counteroffer'?Date.now():null,
+    configVersion:cfg().configVersion||1,
+    configSnapshot:{mpg:cfg().mpg,brokerFeeRate:cfg().brokerFeeRate,monthlyPayment:cfg().monthlyPayment,
+      weeklyRate:cfg().weeklyRate,mileageRate:cfg().mileageRate,monthlyInsurance:cfg().monthlyInsurance,
+      defaultMotelRate:cfg().defaultMotelRate,ownership:cfg().ownership,targetMargin:cfg().targetMargin,
+      minRPM:cfg().minRPM,configSavedAt:cfg().configSavedAt},
+    suggestedRate:coFinalRate||(coData&&coData.suggestedRate)||null,...a,
+    counterofferRate:coFinalRate,counterofferProfit:coProfit};
+  S.loads.unshift(load);await saveLds();
+  const draft=S.emailDraft;
+  S.af={};S.coData=null;S.emailDraft=null;
+  showTab('loads');
+  if(status==='counteroffer'&&draft)setTimeout(()=>openEmailClient(draft),300);
+}
+
+function sendCOEmail(id){
+  const ta=document.getElementById('co-email-ta-'+id);
+  const draft=ta?ta.value:((S.pendingCOEmail&&S.pendingCOEmail.draft)||'');
+  S.pendingCOEmail=null;render();
+  setTimeout(()=>openEmailClient(draft),200);
+}
+function prepareAcceptEmail(id){
+  const l=S.loads.find(x=>x.id===id);
+  if(!l)return;
+  const c=cfg();
+  const sig=buildSignature();
+  const route=l.route||`${l.pickupCity||'origin'} to ${l.dropoffCity||'destination'}`;
+  const poRef=l.poNumber?` (PO #${l.poNumber})`:'';
+  const shipperName=l.shipperContact||'Shipper';
+  const acceptRate=l.counterofferRate||l.rate;
+  const draft=`To: ${l.shipperEmail||'[shipper email]'}
+CC: ${c.brokerEmail||'[broker email]'}
+Subject: Load Acceptance - ${route}${poRef}
+
+Dear ${shipperName},
+
+I am writing to confirm acceptance of the load from ${route}${poRef} at the agreed rate of ${fmt(acceptRate)}.
+
+We look forward to completing this shipment professionally and on time. Please send over any additional load details, pickup instructions, or documentation required to proceed.
+
+Thank you for the opportunity to work with ${l.shipperCompany||'your company'}.
+
+Sincerely,
+${sig}`;
+  S.pendingAcceptEmail={id,draft};
+  S.editingCO=null;
+  render();
+}
+async function sendAcceptEmail(id){
+  const ta=document.getElementById('accept-email-ta-'+id);
+  const draft=ta?ta.value:((S.pendingAcceptEmail&&S.pendingAcceptEmail.draft)||'');
+  S.pendingAcceptEmail=null;
+  await changeLoadDisposition(id,'accepted');
+  setTimeout(()=>openEmailClient(draft),300);
+}
+function fmtStamp(ts){
+  if(!ts)return'';
+  const d=new Date(ts);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+}
+function deliveryStatus(l){
+  if(l.deliveredAt)return'DELIVERED';
+  if(l.pickedUpAt)return'PICKED UP';
+  return'NOT STARTED';
+}
+async function rejectLoad(id){
+  S.loads=S.loads.map(l=>l.id===id&&l.status==='accepted'?{...l,status:'declined',declinedReason:'Rejected after acceptance',pickedUpAt:null,deliveredAt:null}:l);
+  await saveLds();render();
+}
+async function markPickedUp(id){
+  const now=Date.now();
+  const l=S.loads.find(x=>x.id===id);
+  S.loads=S.loads.map(x=>x.id===id?{...x,pickedUpAt:now}:x);
+  if(l){
+    const loc=l.pickupCity||(l.route?l.route.split('->')[0].trim():'')||'';
+    addTripLogEntry({type:'start',timestamp:now,location:loc,note:`Load picked up -- ${l.route||''}`,loadId:id,loadRoute:l.route||''});
+  }
+  await saveLds();await saveTripLog();render();
+}
+async function markDelivered(id){
+  const now=Date.now();
+  const l=S.loads.find(x=>x.id===id);
+  const lastStart=tripLogLastStart();
+  S.loads=S.loads.map(x=>x.id===id?{...x,deliveredAt:now}:x);
+  if(l){
+    const loc=l.dropoffCity||(l.route?l.route.split('->').pop().trim():'')||'';
+    addTripLogEntry({type:'stop',timestamp:now,location:loc,note:`Load delivered -- ${l.route||''}`,loadId:id,loadRoute:l.route||''});
+    const entry=S.tripLog[S.tripLog.length-1];
+    // Check if last start was the pickup for this same load and there are no stops in between
+    const noStopsBetween=lastStart&&(()=>{
+      const startIdx=S.tripLog.indexOf(lastStart);
+      return S.tripLog.slice(startIdx+1,-1).every(e=>e.type!=='stop');
+    })();
+    if(noStopsBetween&&lastStart.loadId===id&&pf(l.totalMiles)>0){
+      // Use the total miles from load analysis (deadhead + trip + return) -- no geocoding needed
+      entry.mileageLookup={miles:Math.round(pf(l.totalMiles)),isEstimate:false,manual:false,fromLoad:true};
+      await saveLds();await saveTripLog();render();
+    } else {
+      await saveLds();await saveTripLog();render();
+      if(lastStart&&entry) await lookupStopMileage(entry.id,lastStart,entry);
+    }
+  } else {
+    await saveLds();await saveTripLog();render();
+  }
+}
+async function changeLoadDisposition(id,status){
+  S.loads=S.loads.map(l=>{
+    if(l.id!==id)return l;
+    let updated={...l,status,declinedReason:status==='declined'?'Manually declined':null,counterofferSentAt:null};
+    // When accepting a counteroffer, reprice everything at the CO rate
+    if(status==='accepted'&&l.status==='counteroffer'&&l.counterofferRate){
+      const newRate=l.counterofferRate;
+      const c=cfg();
+      // Determine broker fee: if original matches % calc, scale to new rate; otherwise keep fixed amount
+      const calcBrokerOnOld=pf(c.brokerFeeRate||0)/100*l.rate;
+      const brokerWasFixed=Math.abs(l.brokerFeeAmt-calcBrokerOnOld)>0.01;
+      const newBrokerFee=brokerWasFixed?l.brokerFeeAmt:pf(c.brokerFeeRate||0)/100*newRate;
+      // Rebuild expenses with new broker fee
+      const expenseDelta=newBrokerFee-l.brokerFeeAmt;
+      const newTotalExpenses=l.totalExpenses+expenseDelta;
+      const newProfit=newRate-newTotalExpenses;
+      const newRPM=l.totalMiles>0?newProfit/l.totalMiles:0;
+      updated={...updated,rate:newRate,brokerFeeAmt:newBrokerFee,totalExpenses:newTotalExpenses,profit:newProfit,rpm:newRPM};
+    }
+    return updated;
+  });
+  S.editingCO=null;await saveLds();render();
+}
+async function saveUpdatedCO(id){
+  const inp=document.getElementById('co-update-rate-'+id);
+  const newRate=parseFloat(inp&&inp.value);
+  if(!newRate||isNaN(newRate))return;
+  let updatedLoad=null;
+  S.loads=S.loads.map(l=>{
+    if(l.id!==id)return l;
+    const coProfit=newRate-l.totalExpenses;
+    updatedLoad={...l,counterofferRate:newRate,counterofferProfit:coProfit,suggestedRate:newRate,counterofferSentAt:Date.now()};
+    return updatedLoad;
+  });
+  S.editingCO=null;
+  if(updatedLoad){
+    const c=cfg();
+    const sig=buildSignature();
+    const route=updatedLoad.route||`${updatedLoad.pickupCity||'origin'} to ${updatedLoad.dropoffCity||'destination'}`;
+    const poRef=updatedLoad.poNumber?` (PO #${updatedLoad.poNumber})`:'';
+    const shipperName=updatedLoad.shipperContact||'Shipper';
+    const draft=`To: ${updatedLoad.shipperEmail||'[shipper email]'}
+CC: ${c.brokerEmail||'[broker email]'}
+Subject: Updated Counteroffer - ${route}${poRef}
+
+Dear ${shipperName},
+
+We are following up on our previous counteroffer for the load from ${route}${poRef}. Please see our updated counteroffer below.
+
+Our updated counteroffer for this load is ${fmt(newRate)}.
+
+We remain very interested in completing this load and look forward to your response.
+
+Sincerely,
+${sig}`;
+    S.pendingCOEmail={id,draft};
+  }
+  await saveLds();render();
+}
+
+// -- POD section HTML helper (avoids deep template literal nesting) --
+function podSectionHtml(l){
+  if(l.status!=='accepted')return'';
+  var pods=l.pods||[];
+  var count=pods.length;
+  var countBadge=count>0?'<span style="font-size:10px;color:var(--muted);">'+count+' photo'+(count>1?'s':'')+'</span>':'';
+  var thumbs='';
+  if(count>0){
+    for(var i=0;i<pods.length;i++){
+      var p=pods[i];
+      thumbs+='<div style="position:relative;width:64px;height:64px;">'
+        +'<img src="'+p.dataUrl+'" onclick="viewPOD('+l.id+','+p.id+')" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;">'
+        +'<button onclick="deletePOD('+l.id+','+p.id+')" style="position:absolute;top:-4px;right:-4px;background:var(--danger);border:none;color:#fff;font-size:10px;width:16px;height:16px;border-radius:8px;cursor:pointer;padding:0;line-height:16px;">\xd7</button>'
+        +'</div>';
+    }
+    thumbs='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">'+thumbs+'</div>';
+  }else{
+    thumbs='<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">No photos yet.</div>';
+  }
+  var sendBtn=count>0?'<button class="btn btn-info btn-sm" style="flex:1" onclick="sendPOD('+l.id+')">SEND POD</button>':'';
+  return'<div style="margin-top:8px;background:var(--surface2);border-radius:7px;padding:8px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;">Proof of Delivery</div>'
+    +countBadge
+    +'</div>'
+    +thumbs
+    +'<div style="display:flex;gap:7px;">'
+    +'<button class="btn btn-outline btn-sm" style="flex:1" onclick="capturePOD('+l.id+')">📷 ADD POD PHOTO</button>'
+    +sendBtn
+    +'</div>'
+    +'</div>';
+}
+
+// -- Render: Loads ------------------------------------------------
+function toggleGroup(g){S.collapsed[g]=!S.collapsed[g];render();}
+function loadItemHtml(l){
+  const isCO=l.status==='counteroffer';
+  const exp=isCO?coExpiryInfo(l):null;
+  let actionHtml='';
+  if(isCO){
+    if(S.editingCO===l.id){
+      actionHtml='<div style="margin-top:10px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.3);border-radius:7px;padding:10px;">'
+        +'<div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:7px;">UPDATE COUNTEROFFER</div>'
+        +'<div style="display:flex;gap:7px;align-items:flex-end;margin-bottom:8px;">'
+        +'<div style="flex:1;"><label class="form-label">New Rate</label>'
+        +'<input class="form-input" type="number" step="0.01" id="co-update-rate-'+l.id+'" placeholder="'+((l.counterofferRate||l.suggestedRate||0).toFixed(2))+'" style="border-color:rgba(167,139,250,0.4);"></div>'
+        +'<button class="btn btn-purple btn-sm" onclick="saveUpdatedCO('+l.id+')">SAVE</button>'
+        +'<button class="btn btn-outline btn-sm" onclick="S.editingCO=null;render()">X</button>'
+        +'</div></div>';
+    } else {
+      actionHtml='<div style="display:flex;gap:6px;margin-top:8px;">'
+        +'<button class="btn btn-success btn-sm" style="flex:1" onclick="prepareAcceptEmail('+l.id+')">ACCEPT</button>'
+        +'<button class="btn btn-danger btn-sm" style="flex:1" onclick="changeLoadDisposition('+l.id+',&quot;declined&quot;)">DECLINE</button>'
+        +'<button class="btn btn-purple btn-sm" style="flex:1" onclick="S.editingCO='+l.id+';render()">UPDATE CO</button>'
+        +'</div>';
+    }
+  }
+  return`
+<div class="load-item${isCO?' counteroffer':''}">
+  <div class="load-item-header">
+    <div>
+      <div class="load-route">${l.route}${l.poNumber?` <span class="po-badge">PO #${l.poNumber}</span>`:''}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;">${l.date} | ${fmtMi(l.totalMiles)} | ${l.tripDays||1}d${l.overnights>0?' - '+l.overnights+' overnight':''}${l.configSnapshot&&l.configSnapshot.configSavedAt?' | <span style="color:var(--muted)">Config: '+new Date(l.configSnapshot.configSavedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</span>':''}</div>
+      ${l.shipperCompany?`<div style="font-size:10px;color:var(--muted)">Shipper: ${l.shipperCompany}${l.shipperContact?' - '+l.shipperContact:''}</div>`:''}
+      ${isCO&&l.counterofferRate?`<div style="font-size:11px;color:var(--purple);margin-top:2px;font-weight:600">Sent to client: ${fmt(l.counterofferRate)}</div>`:(isCO&&l.suggestedRate?`<div style="font-size:11px;color:var(--purple);margin-top:2px;font-weight:600">Counteroffer: ${fmt(l.suggestedRate)}</div>`:'')} 
+    </div>
+    <div style="text-align:right">
+      ${isCO&&l.counterofferRate!=null?`
+        <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent);">${fmt(l.counterofferRate)}</div>
+        <div style="font-size:10px;color:var(--muted);text-align:right;margin-bottom:2px;">CO rate</div>
+        <div class="load-profit" style="color:${l.counterofferProfit>=0?'var(--accent2)':'var(--danger)'}">${l.counterofferProfit<0?'-':''}${fmt(l.counterofferProfit)}</div>
+        <div style="font-size:10px;color:var(--muted);text-align:right;">est. profit</div>
+        <div style="font-size:10px;color:var(--purple);text-align:right;margin-top:2px;">Orig: ${fmt(l.rate)}</div>
+      `:`
+        <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent);">${fmt(l.rate)}</div>
+        <div style="font-size:10px;color:var(--muted);text-align:right;margin-bottom:2px;">load amount</div>
+        <div class="load-profit" style="color:${l.profit>=0?'var(--accent2)':'var(--danger)'}">${l.profit<0?'-':''}${fmt(l.profit)}</div>
+        <div style="font-size:10px;color:var(--muted);text-align:right;">${fmtN(l.rpm,3)}/mi</div>
+      `}
+    </div>
+  </div>
+  ${isCO&&exp?`<div class="expiry-bar"><div class="expiry-fill" style="width:${exp.pct.toFixed(1)}%"></div></div><div class="expiry-text">${exp.label}</div>`:''}
+  <div class="load-meta">
+    <span class="badge badge-amber">Orig: ${fmt(l.rate)}</span>
+    ${isCO&&l.counterofferRate?`<span class="badge badge-purple">CO: ${fmt(l.counterofferRate)}</span>`:''}
+    <span class="badge badge-red">Gas: ${fmt(l.gasCost)}</span>
+    ${l.motelCost>0?`<span class="badge badge-amber">Motel: ${fmt(l.motelCost)}</span>`:''}
+    <span class="badge badge-red">Exp: ${fmt(l.totalExpenses)}</span>
+    <span class="badge ${l.status==='accepted'?'badge-green':l.status==='counteroffer'?'badge-purple':'badge-red'}">${l.status==='counteroffer'?'COUNTEROFFER':l.status.toUpperCase()}</span>
+    ${l.status==='accepted'?`<span class="badge ${l.deliveredAt?'badge-green':l.pickedUpAt?'badge-blue':'badge-amber'}">${deliveryStatus(l)}</span>`:''}
+  </div>
+  ${l.status==='accepted'?`
+  <div style="margin-top:8px;background:var(--surface2);border-radius:7px;padding:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;">Delivery Tracking</div>
+      ${!l.deliveredAt?`<button class="btn btn-danger btn-sm" onclick="rejectLoad(${l.id})" style="font-size:9px;padding:3px 8px;">REJECT LOAD</button>`:''}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+      <div>
+        <div style="font-size:10px;color:var(--muted);">Pickup</div>
+        <div style="font-size:11px;color:${l.pickedUpAt?'var(--accent2)':'var(--muted)'};">${l.pickedUpAt?fmtStamp(l.pickedUpAt):'Not recorded'}</div>
+      </div>
+      ${!l.pickedUpAt?`<button class="btn btn-info btn-sm" onclick="markPickedUp(${l.id})">MARK PICKED UP</button>`:''}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:10px;color:var(--muted);">Delivery</div>
+        <div style="font-size:11px;color:${l.deliveredAt?'var(--accent2)':'var(--muted)'};">${l.deliveredAt?fmtStamp(l.deliveredAt):'Not recorded'}</div>
+      </div>
+      ${l.pickedUpAt&&!l.deliveredAt?`<button class="btn btn-success btn-sm" onclick="markDelivered(${l.id})">MARK DELIVERED</button>`:''}
+    </div>
+  </div>`:''}
+  ${podSectionHtml(l)}
+  ${actionHtml}
+    ${S.pendingCOEmail&&S.pendingCOEmail.id===l.id?`
+  <div class="card" style="margin-top:10px;padding:10px;">
+    <div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:7px;">EMAIL DRAFT - REVIEW & EDIT</div>
+    <textarea class="form-textarea" id="co-email-ta-${l.id}" style="min-height:200px;font-size:11px;">${S.pendingCOEmail.draft}</textarea>
+    <div style="display:flex;gap:7px;margin-top:8px;">
+      <button class="btn btn-info" style="flex:1" onclick="sendCOEmail(${l.id})">OPEN EMAIL CLIENT</button>
+      <button class="btn btn-outline btn-sm" onclick="S.pendingCOEmail=null;render()">X</button>
+    </div>
+  </div>`:''}
+  ${S.pendingAcceptEmail&&S.pendingAcceptEmail.id===l.id?`
+  <div class="card" style="margin-top:10px;padding:10px;">
+    <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:7px;">ACCEPTANCE EMAIL DRAFT - REVIEW & EDIT</div>
+    <textarea class="form-textarea" id="accept-email-ta-${l.id}" style="min-height:200px;font-size:11px;">${S.pendingAcceptEmail.draft}</textarea>
+    <div style="display:flex;gap:7px;margin-top:8px;">
+      <button class="btn btn-success" style="flex:1" onclick="sendAcceptEmail(${l.id})">OPEN EMAIL CLIENT</button>
+      <button class="btn btn-outline btn-sm" onclick="changeLoadDisposition(${l.id},&quot;accepted&quot;)">ACCEPT NO EMAIL</button>
+      <button class="btn btn-outline btn-sm" onclick="S.pendingAcceptEmail=null;render()">X</button>
+    </div>
+  </div>`:''}
+  ${l.notes?`<div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:italic">${l.notes}</div>`:''}
+  ${l.declinedReason?`<div style="font-size:10px;color:var(--danger);margin-top:4px;">${l.declinedReason}</div>`:''}
+</div>`;
+}
+function groupSection(label,items,key,color){
+  const collapsed=S.collapsed[key],arrow=collapsed?'+':'-';
+  return`
+<div class="group-header" onclick="toggleGroup('${key}')">
+  <span class="group-header-label" style="color:${color}">${label} <span style="font-size:11px;font-weight:400;color:var(--muted)">(${items.length})</span></span>
+  <span class="group-toggle">${arrow}</span>
+</div>
+${collapsed?'':(items.length?items.map(loadItemHtml).join(''):`<div style="text-align:center;padding:18px;color:var(--muted);font-size:13px">None.</div>`)}`;
+}
+function filterLoadsByPeriod(loads,period){
+  if(period==='all'||period==='active')return loads;
+  const now=new Date();
+  return loads.filter(l=>{
+    const d=new Date(l.date);
+    if(period==='week'){const s=new Date(now);s.setDate(now.getDate()-now.getDay());s.setHours(0,0,0,0);return d>=s;}
+    if(period==='prevweek'){
+      const thisSun=new Date(now);thisSun.setDate(now.getDate()-now.getDay());thisSun.setHours(0,0,0,0);
+      const lastSun=new Date(thisSun);lastSun.setDate(thisSun.getDate()-7);
+      return d>=lastSun&&d<thisSun;
+    }
+    if(period==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+    return d.getFullYear()===now.getFullYear();
+  });
+}
+function renderLoads(){
+  expireCounterOffers();
+  const isActiveTab=S.lp==='active';
+  const allCo=S.loads.filter(l=>l.status==='counteroffer');
+
+  if(isActiveTab){
+    // Active tab: accepted but not yet delivered + all pending counteroffers
+    const activeAcc=S.loads.filter(l=>l.status==='accepted'&&!l.deliveredAt);
+    const notStarted=activeAcc.filter(l=>!l.pickedUpAt);
+    const inTransit=activeAcc.filter(l=>l.pickedUpAt&&!l.deliveredAt);
+    return`
+<div class="section-title">Loads</div>
+<div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;">
+  <button class="period-btn" onclick="S.lp='week';render()">WEEK</button>
+  <button class="period-btn" onclick="S.lp='month';render()">MONTH</button>
+  <button class="period-btn" onclick="S.lp='year';render()">YEAR</button>
+  <button class="period-btn" onclick="S.lp='all';render()">ALL</button>
+  <button class="period-btn active" onclick="S.lp='active';render()" style="border-color:var(--accent2);color:var(--accent2);">ACTIVE</button>
+</div>
+${allCo.length>0?`<div class="alert alert-purple" style="margin-bottom:10px;">${allCo.length} counteroffer${allCo.length>1?'s':''} pending -- auto-decline after 48 hours.</div>`:''}
+${activeAcc.length===0&&allCo.length===0?`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">No active loads -- all accepted loads have been delivered.</div>`:''}
+${notStarted.length>0?groupSection('Awaiting Pickup ('+notStarted.length+')',notStarted,'accepted','var(--accent)'):''}
+${inTransit.length>0?groupSection('In Transit ('+inTransit.length+')',inTransit,'accepted','var(--info)'):''}
+${allCo.length>0?groupSection('Pending Counteroffers',allCo,'counteroffer','var(--purple)'):''}`;
+  }
+
+  const filtered=filterLoadsByPeriod(S.loads,S.lp);
+  const acc=filtered.filter(l=>l.status==='accepted');
+  const co=filtered.filter(l=>l.status==='counteroffer');
+  const dec=filtered.filter(l=>l.status==='declined');
+  return`
+<div class="section-title">Loads</div>
+<div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;">
+  <button class="period-btn ${S.lp==='week'?'active':''}" onclick="S.lp='week';render()">THIS WEEK</button>
+  <button class="period-btn ${S.lp==='prevweek'?'active':''}" onclick="S.lp='prevweek';render()">PREV WEEK</button>
+  <button class="period-btn ${S.lp==='month'?'active':''}" onclick="S.lp='month';render()">MONTH</button>
+  <button class="period-btn ${S.lp==='year'?'active':''}" onclick="S.lp='year';render()">YEAR</button>
+  <button class="period-btn ${S.lp==='all'?'active':''}" onclick="S.lp='all';render()">ALL</button>
+  <button class="period-btn ${S.lp==='active'?'active':''}" onclick="S.lp='active';render()" style="border-color:var(--accent2);color:var(--accent2);">ACTIVE</button>
+</div>
+${allCo.length>0?`<div class="alert alert-purple" style="margin-bottom:10px;">${allCo.length} counteroffer${allCo.length>1?'s':''} pending -- auto-decline after 48 hours.</div>`:''}
+${groupSection('Accepted',acc,'accepted','var(--accent2)')}
+${groupSection('Counteroffers',co,'counteroffer','var(--purple)')}
+${groupSection('Declined',dec,'declined','var(--danger)')}`;
+}
+
+// -- Render: Setup ------------------------------------------------
+function sh(key,label,dflt=false){
+  const open=S.ss?(S.ss[key]!==undefined&&S.ss[key]!==null?S.ss[key]:dflt):dflt;
+  const hdr='<div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding-bottom:'+(open?'8':'0')+'px;" onclick="S.ss=S.ss||{};S.ss[\''+key+'\']=!(S.ss&&S.ss[\''+key+'\']);render()">'
+    +'<div class="sub-section" style="margin:0;border:none;padding:0;">'+label+'</div>'
+    +'<span style="font-size:16px;font-weight:700;color:var(--muted);">'+(open?'-':'+')+'</span>'
+    +'</div>';
+  return hdr+(open?'<div style="margin-top:8px;">':'<div style="display:none;">');
+}
+function setupSummaryHtml(c,own,leaseStats){
+  return`
+<div class="card" style="border-color:rgba(245,158,11,0.3);">${sh('summary','CURRENT SETUP SUMMARY',true)}
+  ${c.ownerName?`<div class="info-row"><span class="info-key">Owner</span><span class="info-val">${c.ownerName}</span></div>`:''}
+  ${c.addressCity?`<div class="info-row"><span class="info-key">Address</span><span class="info-val">${c.addressStreet?c.addressStreet+', ':''}${c.addressCity}, ${c.addressState||''} ${c.addressZip||''}</span></div>`:''}
+  ${c.personalEmail?`<div class="info-row"><span class="info-key">Personal Email</span><span class="info-val">${c.personalEmail}</span></div>`:''}
+  
+
+  <div class="info-row"><span class="info-key">Vehicle</span><span class="info-val">${c.vehicleType||'--'}</span></div>
+  ${c.mpg?`<div class="info-row"><span class="info-key">MPG</span><span class="info-val">${c.mpg} mpg</span></div>`:''}
+  <div class="info-row"><span class="info-key">Default Fuel Type</span><span class="info-val">${c.fuelType||'Diesel'}</span></div>
+  ${c.ownership?`<div class="info-row"><span class="info-key">Ownership</span><span class="info-val"><span class="badge badge-blue">${c.ownership}</span></span></div>`:''}
+  ${c.monthlyPayment?`<div class="info-row"><span class="info-key">Monthly Payment</span><span class="info-val" style="color:var(--danger)">${fmt(c.monthlyPayment)}/mo</span></div>`:''}
+  ${own==='Leased'&&c.leaseTotalMiles?`<div class="info-row"><span class="info-key">Total Lease Miles</span><span class="info-val">${fmtMi(c.leaseTotalMiles)}</span></div>`:''}
+  ${own==='Leased'&&leaseStats?`<div class="info-row"><span class="info-key">Lease Miles Remaining</span><span class="info-val" style="color:${leaseStats.isOver?'var(--danger)':leaseStats.isWarn?'var(--accent)':'var(--accent2)'}">${fmtMi(leaseStats.remaining)}</span></div>`:''}
+  ${c.mileageRate?`<div class="info-row"><span class="info-key">${own==='Leased'?'Overage Rate':'Mileage Rate'}</span><span class="info-val">${fmtN(c.mileageRate,3)}/mi</span></div>`:''}
+  ${c.weeklyRate?`<div class="info-row"><span class="info-key">Weekly Rate</span><span class="info-val">${fmt(c.weeklyRate)}/wk</span></div>`:''}
+  <div class="info-row"><span class="info-key">Broker</span><span class="info-val">${c.brokerCompany||'Not set'}${c.brokerMC?' | MC '+c.brokerMC:''}</span></div>
+  ${c.brokerFeeRate?`<div class="info-row"><span class="info-key">Broker Fee Rate</span><span class="info-val">${c.brokerFeeRate}%</span></div>`:''}
+  ${c.defaultMotelRate?`<div class="info-row"><span class="info-key">Default Motel Rate</span><span class="info-val">${fmt(c.defaultMotelRate)}/night</span></div>`:''}
+  ${c.monthlyInsurance?`<div class="info-row"><span class="info-key">Monthly Insurance</span><span class="info-val" style="color:var(--danger)">${fmt(c.monthlyInsurance)}/mo</span></div>`:''}
+  ${c.minRPM?`<div class="info-row"><span class="info-key">Min Revenue/Mile</span><span class="info-val" style="color:var(--accent)">${fmtN(c.minRPM,3)}/mi</span></div>`:''}
+  ${c.targetMargin?`<div class="info-row"><span class="info-key">Target Profit %</span><span class="info-val">${c.targetMargin}%</span></div>`:''}
+  ${c.agreementAccepted?`<div class="info-row"><span class="info-key">User Agreement</span><span class="info-val" style="color:var(--accent2)">Accepted</span></div>`:''}
+</div></div>`;
+}
+function renderSetup(){
+  const c=S.config||{},own=c.ownership||'';
+  const leaseStats=leaseMileStats();
+  const isFirstTime=!c.configSavedAt;
+  // Validate mandatory fields for save button
+  const mandatoryMet=!!(c.ownerName&&c.personalEmail&&(isFirstTime?c.agreementAccepted:true));
+  return`
+<div class="section-title">Setup ${c.configSavedAt?`<span style="font-size:11px;font-weight:400;color:var(--muted);">Active since ${new Date(c.configSavedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`:''}</div>
+${c.configSavedAt?setupSummaryHtml(c,own,leaseStats):''}
+<div class="card">${sh('personal','PERSONAL INFO *')}
+  <div class="form-group"><label class="form-label">Full Name <span style="color:var(--danger)">*</span></label><input class="form-input" type="text" placeholder="First Last" value="${c.ownerName||''}" oninput="(S.config=S.config||{}).ownerName=this.value"/></div>
+  <div class="form-group"><label class="form-label">Driver's License #</label><input class="form-input" type="text" placeholder="License number" value="${c.driversLicense||''}" oninput="(S.config=S.config||{}).driversLicense=this.value"/></div>
+  <div class="form-group"><label class="form-label">Street Address</label><input class="form-input" type="text" placeholder="123 Main St" value="${c.addressStreet||''}" oninput="(S.config=S.config||{}).addressStreet=this.value"/></div>
+  <div class="form-row"><div class="form-group"><label class="form-label">City</label><input class="form-input" type="text" placeholder="City" value="${c.addressCity||''}" oninput="(S.config=S.config||{}).addressCity=this.value"/></div><div class="form-group"><label class="form-label">State</label><input class="form-input" type="text" placeholder="MN" maxlength="2" value="${c.addressState||''}" oninput="(S.config=S.config||{}).addressState=this.value"/></div></div>
+  <div class="form-group"><label class="form-label">ZIP Code</label><input class="form-input" type="text" maxlength="5" placeholder="55101" value="${c.addressZip||''}" oninput="(S.config=S.config||{}).addressZip=this.value"/></div>
+  <div class="form-group" style="margin-bottom:0"><label class="form-label">Personal Email <span style="color:var(--danger)">*</span></label><input class="form-input" type="email" placeholder="you@email.com" value="${c.personalEmail||''}" oninput="(S.config=S.config||{}).personalEmail=this.value"/></div>
+</div></div>
+</div>
+<div class="card">${sh('vehicle','VEHICLE')}
+  <div class="form-group"><label class="form-label">Vehicle Type / Name</label><input class="form-input" type="text" placeholder="Freightliner Cascadia" value="${c.vehicleType||''}" oninput="(S.config=S.config||{}).vehicleType=this.value"/></div>
+  <div class="form-group"><label class="form-label">Default Fuel Type</label>
+    <div style="display:flex;gap:6px;margin-top:4px;">
+      <button class="type-btn ${(c.fuelType||'Diesel')==='Diesel'?'active-rate':''}" style="flex:1;padding:7px;font-size:12px;" onclick="(S.config=S.config||{}).fuelType='Diesel';render()">DIESEL</button>
+      <button class="type-btn ${(c.fuelType||'Diesel')==='Regular'?'active-addon':''}" style="flex:1;padding:7px;font-size:12px;" onclick="(S.config=S.config||{}).fuelType='Regular';render()">REGULAR</button>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Miles Per Gallon</label><input class="form-input" type="number" step="0.1" placeholder="6.5" value="${c.mpg||''}" oninput="(S.config=S.config||{}).mpg=this.value"/></div>
+    <div class="form-group"><label class="form-label">Ownership</label>
+      <select class="form-select" onchange="(S.config=S.config||{}).ownership=this.value;render()">
+        <option value="">Select...</option>
+        ${['Owned','Financed','Leased','Rented'].map(o=>'<option value="'+o+'" '+(own===o?'selected':'')+'>'+o+'</option>').join('')}
+      </select>
+    </div>
+  </div>
+  ${(own==='Financed'||own==='Leased')?'<div class="form-group"><label class="form-label">Monthly Payment ($)</label><input class="form-input" type="number" placeholder="2400" value="'+(c.monthlyPayment||'')+'" oninput="S.config.monthlyPayment=this.value"/></div>':''}
+  ${own==='Rented'?'<div class="form-group"><label class="form-label">Weekly Rental Rate ($)</label><input class="form-input" type="number" placeholder="1200" value="'+(c.weeklyRate||'')+'" oninput="S.config.weeklyRate=this.value"/></div>':''}
+  ${(own==='Rented')?'<div class="form-group"><label class="form-label">Mileage Rate ($/mile)</label><input class="form-input" type="number" step="0.001" placeholder="0.15" value="'+(c.mileageRate||'')+'" oninput="S.config.mileageRate=this.value"/></div>':''}
+</div></div>
+
+${own==='Leased'?`
+<div class="card">${sh('lease','LEASE MILE TRACKING')}
+  <div class="alert alert-info" style="font-size:11px;margin-bottom:10px;">Only accepted loads count toward lease miles. Included miles are free -- overage miles are charged at the rate below.</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Total Lease Miles</label><input class="form-input" type="number" placeholder="30000" value="${c.leaseTotalMiles||''}" oninput="(S.config=S.config||{}).leaseTotalMiles=this.value"/><div style="font-size:10px;color:var(--muted);margin-top:2px;">e.g. 36mo x 10,000/yr = 30,000</div></div>
+    <div class="form-group"><label class="form-label">Miles Remaining Today</label><input class="form-input" type="number" placeholder="22000" value="${c.leaseStartingMiles||''}" oninput="(S.config=S.config||{}).leaseStartingMiles=this.value"/><div style="font-size:10px;color:var(--muted);margin-top:2px;">Miles left when you started tracking</div></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Overage Rate ($/mile)</label><input class="form-input" type="number" step="0.001" placeholder="0.25" value="${c.mileageRate||''}" oninput="(S.config=S.config||{}).mileageRate=this.value"/></div>
+    <div class="form-group"><label class="form-label">Warning Threshold (%)</label><input class="form-input" type="number" placeholder="80" value="${c.leaseMileWarnPct||''}" oninput="(S.config=S.config||{}).leaseMileWarnPct=this.value"/><div style="font-size:10px;color:var(--muted);margin-top:2px;">Alert when % used reaches this</div></div>
+  </div>
+  ${leaseStats?leaseMeterHtml(leaseStats):''}
+</div></div>`:''}
+
+<div class="card">${sh('broker','BROKER (MC CARRIER)')}
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Broker Company</label><input class="form-input" type="text" placeholder="XPO Logistics" value="${c.brokerCompany||''}" oninput="(S.config=S.config||{}).brokerCompany=this.value"/></div>
+    <div class="form-group"><label class="form-label">MC Number</label><input class="form-input" type="text" placeholder="MC-123456" value="${c.brokerMC||''}" oninput="(S.config=S.config||{}).brokerMC=this.value"/></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Broker Email (CC)</label><input class="form-input" type="email" placeholder="dispatch@xpo.com" value="${c.brokerEmail||''}" oninput="(S.config=S.config||{}).brokerEmail=this.value"/></div>
+    <div class="form-group"><label class="form-label">Broker Fee Rate (%)</label><input class="form-input" type="number" step="0.1" placeholder="10" value="${c.brokerFeeRate||''}" oninput="(S.config=S.config||{}).brokerFeeRate=this.value"/></div>
+  </div>
+</div></div>
+<div class="card">${sh('overnightInsurance','OVERNIGHT, TRAVEL & INSURANCE')}
+  <div class="form-group"><label class="form-label">Default Motel Rate per Night ($)</label><input class="form-input" type="number" placeholder="120" value="${c.defaultMotelRate||''}" oninput="(S.config=S.config||{}).defaultMotelRate=this.value"/></div>
+  <div class="form-group" style="margin-bottom:0"><label class="form-label">Monthly Insurance Premium ($)</label><input class="form-input" type="number" placeholder="0" value="${c.monthlyInsurance||''}" oninput="(S.config=S.config||{}).monthlyInsurance=this.value"/><div style="font-size:10px;color:var(--muted);margin-top:3px;">Prorated per trip day and included in expense calculations.</div></div>
+</div></div>
+<div class="card">${sh('profitability','PROFITABILITY TARGETS')}
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Min Revenue/Mile ($/mi)</label><input class="form-input" type="number" step="0.001" placeholder="2.00" value="${c.minRPM||''}" oninput="(S.config=S.config||{}).minRPM=this.value"/></div>
+    <div class="form-group"><label class="form-label">Target Profit %</label><input class="form-input" type="number" step="0.1" placeholder="20" value="${c.targetMargin||''}" oninput="(S.config=S.config||{}).targetMargin=this.value"/></div>
+  </div>
+</div></div>
+${isFirstTime?`
+<div style="background:var(--surface);border:1px solid rgba(96,165,250,0.3);border-radius:8px;padding:11px;margin-bottom:9px;">
+  <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:var(--text);line-height:1.5;">
+    <input type="checkbox" id="agreement-chk" style="margin-top:2px;accent-color:var(--accent);width:16px;height:16px;flex-shrink:0;"
+      ${c.agreementAccepted?'checked':''}
+      onchange="(S.config=S.config||{}).agreementAccepted=this.checked;render()"/>
+    I have read and agree to the <a href="https://kbcoopercog.github.io/kbcooperenterprises---Legal/" target="_blank" rel="noopener" style="color:var(--info);">KB Cooper Enterprises -- User Agreement &amp; Terms of Service</a> and Terms of Service.
+  </label>
+  ${!c.agreementAccepted?'<div class="calc-hint" style="color:var(--danger);margin-top:6px;">You must accept the agreement to complete setup.</div>':''}
+</div>`:''}
+${!mandatoryMet?`<div class="alert alert-warn" style="font-size:11px;">Complete all required fields (<span style="color:var(--danger)">*</span>) to save setup.</div>`:''}
+<button class="btn btn-primary btn-full" onclick="${mandatoryMet?'doSaveSetup()':'null'}" style="${mandatoryMet?'':'opacity:0.5;cursor:not-allowed;'}">${mandatoryMet?'SAVE SETUP':'COMPLETE REQUIRED FIELDS TO SAVE'}</button>
+<div style="text-align:center;margin-top:10px;font-size:11px;color:var(--muted);">
+  <a href="https://kbcoopercog.github.io/kbcooperenterprises---Legal/" target="_blank" rel="noopener" style="color:var(--info);">KB Cooper Enterprises -- User Agreement &amp; Terms of Service</a>${c.agreementAccepted?` &nbsp;.&nbsp; <span style="color:var(--accent2)">&#10003; Accepted ${new Date(c.agreementAcceptedAt||c.configSavedAt||Date.now()).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`:''}
+</div>`;
+}
+async function doSaveSetup(){
+  S.config=S.config||{};
+  const isFirstTime=!S.config.configSavedAt;
+  const prev=pf(S.config.configVersion)||0;
+  S.config.configVersion=prev+1;
+  S.config.configSavedAt=Date.now();
+  if(isFirstTime&&S.config.agreementAccepted&&!S.config.agreementAcceptedAt){
+    S.config.agreementAcceptedAt=Date.now();
+  }
+  await saveCfg();
+  showTab('dashboard');
+}
+
+// -- Render: Reports ----------------------------------------------
+function renderReports(){
+  const wk=getPeriodLoads('week'),pwk=getPeriodLoads('prevweek'),mo=getPeriodLoads('month'),pmo=getPeriodLoads('prevmonth'),yr=getPeriodLoads('year');
+  const tw=sumLoads(wk),tpw=sumLoads(pwk),tm=sumLoads(mo),tpm=sumLoads(pmo),ty=sumLoads(yr);
+  const leaseStats=leaseMileStats();
+  const rpCollapsed=S.rpCollapsed||{week:false,month:true};
+  const pt=(key,label,t,count,expectedOverhead)=>{
+    const open=!rpCollapsed[key];
+    const overUnder=expectedOverhead!=null?t.profit-expectedOverhead:null;
+    return`<div class="card" style="margin-bottom:10px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;" onclick="S.rpCollapsed=S.rpCollapsed||{};S.rpCollapsed['${key}']=!S.rpCollapsed['${key}'];render()">
+    <div style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.8px;color:var(--accent);text-transform:uppercase;">${label} <span style="font-size:11px;font-weight:400;color:var(--muted)">(${count} loads)</span></div>
+    <span style="font-size:16px;font-weight:700;color:var(--muted);">${open?'-':'+'}</span>
+  </div>
+  ${open?`<div style="margin-top:8px;">
+  <div class="info-row"><span class="info-key">Revenue</span><span class="info-val" style="color:var(--accent)">${fmt(t.revenue)}</span></div>
+  <div class="info-row"><span class="info-key">Gas Cost</span><span class="info-val" style="color:var(--danger)">-${fmt(t.gasCost)}</span></div>
+  <div class="info-row"><span class="info-key">Mileage Cost</span><span class="info-val" style="color:var(--danger)">-${fmt(t.milesCost)}</span></div>
+  <div class="info-row"><span class="info-key">Vehicle Payment</span><span class="info-val" style="color:var(--danger)">-${fmt(t.vehicleProration)}</span></div>
+  ${t.insurance>0?`<div class="info-row"><span class="info-key">Insurance</span><span class="info-val" style="color:var(--danger)">-${fmt(t.insurance)}</span></div>`:''}
+  <div class="info-row"><span class="info-key">Broker Fees</span><span class="info-val" style="color:var(--danger)">-${fmt(t.brokerFee)}</span></div>
+  <div class="info-row"><span class="info-key">Motel Costs</span><span class="info-val" style="color:var(--danger)">-${fmt(t.motelCost)}</span></div>
+  <div class="info-row"><span class="info-key">Tolls</span><span class="info-val" style="color:var(--danger)">-${fmt(t.tolls)}</span></div>
+  <div class="info-row"><span class="info-key">Parking</span><span class="info-val" style="color:var(--danger)">-${fmt(t.parking)}</span></div>
+  <div class="info-row"><span class="info-key">Trash Fees</span><span class="info-val" style="color:var(--danger)">-${fmt(t.trashFee)}</span></div>
+  <div class="info-row"><span class="info-key">Detention Pay</span><span class="info-val" style="color:var(--danger)">-${fmt(t.detention)}</span></div>
+  <div class="info-row"><span class="info-key">2 Man Support</span><span class="info-val" style="color:var(--danger)">-${fmt(t.twoMan)}</span></div>
+  ${t.factoringFee>0?`<div class="info-row"><span class="info-key">Factoring Fees</span><span class="info-val" style="color:var(--danger)">-${fmt(t.factoringFee)}</span></div>`:''}
+  <div class="info-row" style="border-top:1px solid var(--muted);margin-top:3px;padding-top:5px;"><span class="info-key" style="font-weight:700;color:var(--text)">Total Expenses</span><span class="info-val" style="font-weight:700;color:var(--danger)">-${fmt(t.totalExpenses)}</span></div>
+  <div class="info-row"><span class="info-key" style="font-weight:700;color:var(--text)">Estimated Profit</span><span class="info-val" style="font-weight:700;font-size:14px;color:${t.profit>=0?'var(--accent2)':'var(--danger)'}">${t.profit<0?'-':''}${fmt(t.profit)}</span></div>
+  <div class="info-row"><span class="info-key">Total Miles</span><span class="info-val">${fmtMi(t.miles)}</span></div>
+  ${expectedOverhead!=null?`
+  <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">
+    <div class="info-row"><span class="info-key" style="color:var(--muted);">Expected Fixed Overhead</span><span class="info-val" style="color:var(--muted);">-${fmt(expectedOverhead)}</span></div>
+    <div style="background:${overUnder>=0?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.1)'};border:1px solid ${overUnder>=0?'rgba(16,185,129,0.35)':'rgba(239,68,68,0.35)'};border-radius:7px;padding:8px 10px;margin-top:6px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:10px;font-weight:700;color:${overUnder>=0?'var(--accent2)':'var(--danger)'};letter-spacing:0.5px;text-transform:uppercase;">${overUnder>=0?'OVER BREAK EVEN':'UNDER BREAK EVEN'}</div>
+      <div style="font-family:var(--fh);font-size:20px;font-weight:700;color:${overUnder>=0?'var(--accent2)':'var(--danger)'};">${overUnder>=0?'+':'-'}${fmt(Math.abs(overUnder))}</div>
+    </div>
+  </div>`:''}
+  </div>`:''}
+</div>`;
+  };
+  const bench=fixedCostBenchmarks();
+  return`
+<div class="section-title">Reports</div>
+<div style="margin-bottom:12px;">
+  <div class="sub-section" style="margin-top:0;">ESTIMATED PROFITABILITY LOAD EXPORT</div>
+  <div style="display:flex;gap:5px;margin-bottom:8px;">
+    <button class="period-btn ${S.rp==='week'?'active':''}" onclick="S.rp='week';render()">THIS WEEK</button>
+    <button class="period-btn ${S.rp==='prevweek'?'active':''}" onclick="S.rp='prevweek';render()">PREV WEEK</button>
+    <button class="period-btn ${S.rp==='month'?'active':''}" onclick="S.rp='month';render()">THIS MONTH</button>
+    <button class="period-btn ${S.rp==='prevmonth'?'active':''}" onclick="S.rp='prevmonth';render()">PREV MONTH</button>
+    <button class="period-btn ${S.rp==='year'?'active':''}" onclick="S.rp='year';render()">YEAR</button>
+    <button class="period-btn ${S.rp==='all'?'active':''}" onclick="S.rp='all';render()">ALL</button>
+  </div>
+  <button class="btn btn-info btn-full" onclick="exportCSV(S.rp)">EXPORT ${S.rp==='all'?'ALL':S.rp==='prevweek'?'PREV WEEK':S.rp==='prevmonth'?'PREV MONTH':S.rp.toUpperCase()} TO CSV</button>
+</div>
+${pt('week','THIS WEEK',tw,wk.length,bench?bench.weekly:null)}
+${pt('prevweek','PREV WEEK',tpw,pwk.length,bench?bench.weekly:null)}
+${pt('month','THIS MONTH',tm,mo.length,bench?bench.monthly:null)}
+${pt('prevmonth','PREV MONTH',tpm,pmo.length,bench?bench.monthly:null)}
+${leaseStats?`
+<div class="card">
+  <div class="sub-section" style="margin-top:0">LEASE MILE STATUS</div>
+  ${leaseMeterHtml(leaseStats)}
+  <div class="info-row" style="margin-top:8px;"><span class="info-key">Total Lease Miles</span><span class="info-val">${fmtMi(leaseStats.totalIncluded)}</span></div>
+  <div class="info-row"><span class="info-key">Used (all time)</span><span class="info-val">${fmtMi(leaseStats.totalUsed)}</span></div>
+  <div class="info-row"><span class="info-key">Tracked via App</span><span class="info-val">${fmtMi(leaseStats.milesUsedSinceSetup)}</span></div>
+  <div class="info-row"><span class="info-key">Remaining</span><span class="info-val" style="color:${leaseStats.isOver?'var(--danger)':'var(--accent2)'}">${fmtMi(leaseStats.remaining)}</span></div>
+  ${leaseStats.isOver?`<div class="info-row"><span class="info-key">Overage Miles</span><span class="info-val" style="color:var(--danger)">${fmtMi(leaseStats.overageMiles)}</span></div>`:''}
+</div>`:''}`;
+}
+
+function filterTripLogByPeriod(period){
+  var now=new Date();
+  var cutoff=new Date(now);cutoff.setDate(now.getDate()-30);cutoff.setHours(0,0,0,0);
+  if(period==='all')return S.tripLog;
+  return S.tripLog.filter(function(e){
+    var d=new Date(e.timestamp);
+    return d>=cutoff;
+  });
+}
+function downloadCSV(filename,csv){
+  if(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+    try{
+      var Filesystem=window.Capacitor.Plugins.Filesystem;
+      var Share=window.Capacitor.Plugins.Share;
+      if(!Filesystem){alert('Export failed: Filesystem plugin not available');return;}
+      if(!Share){alert('Export failed: Share plugin not available');return;}
+      Filesystem.writeFile({path:filename,data:csv,directory:'CACHE',encoding:'utf8'}).then(function(result){
+        return Share.share({title:filename,url:result.uri,dialogTitle:'Save or Share '+filename});
+      }).catch(function(err){
+        alert('Export failed: '+(err&&err.message?err.message:err));
+      });
+    }catch(err){
+      alert('Export failed (sync): '+(err&&err.message?err.message:err));
+    }
+  }else{
+    var blob=new Blob([csv],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},100);
+  }
+}
+function exportTripLog(period){
+  var entries=filterTripLogByPeriod(period||'all');
+  if(!entries.length){alert('No trip log entries for the selected period.');return;}
+  var h=['Type','DateTime','Location','Note','LoadRoute','TripDuration','TimeSinceLastStop','TripMiles','MileageSource'];
+  var rows=entries.map(function(e){
+    return[
+      e.type.toUpperCase(),
+      '"'+fmtStamp(e.timestamp)+'"',
+      '"'+(e.location||'')+'"',
+      '"'+(e.note||'')+'"',
+      '"'+(e.loadRoute||'')+'"',
+      '"'+(e.tripDuration?e.tripDuration.label:'')+'"',
+      '"'+(e.elapsedSinceLastStop?e.elapsedSinceLastStop.label:'')+'"',
+      (e.mileageLookup&&e.mileageLookup!=='pending'&&e.mileageLookup!=='failed')?e.mileageLookup.miles:'',
+      (e.mileageLookup&&e.mileageLookup!=='pending'&&e.mileageLookup!=='failed')?'"'+(e.mileageLookup.manual?'manual':e.mileageLookup.fromLoad?'from load analysis':e.mileageLookup.isEstimate?'estimated':'calculated')+'"':''
+    ].join(',');
+  });
+  var csv=[h.join(',')].concat(rows).join('\n');
+  var filename=period==='30'?'TripLog_Last30Days.csv':'TripLog_All.csv';
+  downloadCSV(filename,csv);
+}
+function exportCSV(period){
+  var c=cfg();
+  var bench=fixedCostBenchmarks();
+  var exportLoads=S.loads;
+  if(period!=='all'){
+    var now=new Date();
+    exportLoads=S.loads.filter(function(l){
+      var d=new Date(l.date);
+      if(period==='week'){var s=new Date(now);s.setDate(now.getDate()-now.getDay());s.setHours(0,0,0,0);return d>=s;}
+      if(period==='prevweek'){var thisSun=new Date(now);thisSun.setDate(now.getDate()-now.getDay());thisSun.setHours(0,0,0,0);var lastSun=new Date(thisSun);lastSun.setDate(thisSun.getDate()-7);return d>=lastSun&&d<thisSun;}
+      if(period==='prevmonth'){var pm=new Date(now.getFullYear(),now.getMonth()-1,1);return d.getFullYear()===pm.getFullYear()&&d.getMonth()===pm.getMonth();}
+      if(period==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+      return d.getFullYear()===now.getFullYear();
+    });
+  }
+  var h=['PONumber','Date','Route','Status','Rate','SuggestedCORate','TotalMiles','DeadheadMiles','TripMiles','ReturnMiles','TripDays','Overnights','Gallons','DieselPrice','GasCost','MilesCost','VehicleProration','InsuranceProration','BrokerFeeAmt','MotelCost','Tolls','Parking','TrashFee','TrashFeeType','Detention','DetentionType','TwoManSupport','TwoManType','FactoringFee','TotalExpenses','EstimatedProfit','RPM','FixedOverhead_Weekly','FixedOverhead_Monthly','FixedOverhead_Yearly','DeliveryStatus','PickedUpAt','DeliveredAt','ShipperCompany','ShipperContact','ShipperEmail','BrokerCompany','BrokerMC','PickupCity','DropoffCity','Notes'];
+  var rows=exportLoads.map(function(l){
+    return[
+      '"'+(l.poNumber||'')+'"',l.date,'"'+l.route+'"',l.status,
+      l.rate,l.suggestedRate||'',
+      l.totalMiles,l.deadheadMiles,l.tripMiles,l.returnMiles,l.tripDays||1,l.overnights||0,
+      (l.gallons||0).toFixed(2),l.dieselPrice,
+      (l.gasCost||0).toFixed(2),(l.milesCost||0).toFixed(2),
+      (l.vehicleProration||0).toFixed(2),(l.insuranceProration||0).toFixed(2),
+      (l.brokerFeeAmt||0).toFixed(2),(l.motelCost||0).toFixed(2),
+      (l.tolls||0).toFixed(2),(l.parking||0).toFixed(2),
+      (l.trashFee||0).toFixed(2),l.trashFeeType||'included',
+      (l.detention||0).toFixed(2),l.detentionType||'included',
+      (l.twoMan||0).toFixed(2),l.twoManType||'included',
+      (l.factoringFee||0).toFixed(2),
+      (l.totalExpenses||0).toFixed(2),(l.profit||0).toFixed(2),(l.rpm||0).toFixed(4),
+      bench?(bench.weekly).toFixed(2):'',bench?(bench.monthly).toFixed(2):'',bench?(bench.yearly).toFixed(2):'',
+      '"'+deliveryStatus(l)+'"','"'+(l.pickedUpAt?fmtStamp(l.pickedUpAt):'')+'"','"'+(l.deliveredAt?fmtStamp(l.deliveredAt):'')+'"',
+      '"'+(l.shipperCompany||'')+'"','"'+(l.shipperContact||'')+'"','"'+(l.shipperEmail||'')+'"',
+      '"'+(c.brokerCompany||'')+'"','"'+(c.brokerMC||'')+'"',
+      '"'+(l.pickupCity||'')+'"','"'+(l.dropoffCity||'')+'"',
+      '"'+(l.notes||'')+'"'
+    ].join(',');
+  });
+  var csv=[h.join(',')].concat(rows).join('\n');
+  var periodLabel=period==='all'?'All':period==='prevweek'?'PrevWeek':period==='prevmonth'?'PrevMonth':period.charAt(0).toUpperCase()+period.slice(1);
+  downloadCSV('Loads_'+periodLabel+'.csv',csv);
+}
+
+// Trip Log
+function buildAddressString(addr){
+  var house=addr.house_number||'';
+  var road=addr.road||addr.pedestrian||addr.footway||'';
+  var city=addr.city||addr.town||addr.village||addr.county||'';
+  var state=addr.state||'';
+  var zip=addr.postcode||'';
+  var street=[house,road].filter(Boolean).join(' ');
+  var cityState=[city,state].filter(Boolean).join(', ');
+  return[street,cityState,zip].filter(Boolean).join(', ');
+}
+async function reverseGeocode(lat,lon){
+  try{
+    var r=await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&addressdetails=1');
+    if(r.ok){var d=await r.json();var addr=d.address||{};var result=buildAddressString(addr);if(result)return result;}
+  }catch(e){}
+  try{
+    var url='https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&addressdetails=1';
+    var r2=await fetch('https://corsproxy.io/?'+encodeURIComponent(url));
+    if(r2.ok){var d2=await r2.json();var addr2=d2.address||{};var result2=buildAddressString(addr2);if(result2)return result2;}
+  }catch(e){}
+  return null;
+}
+function tlGeolocate(){
+  if(!navigator.geolocation){S.tlGeoStatus={ok:false,msg:'Geolocation not supported on this device.'};render();return;}
+  S.tlGeoStatus={ok:null,msg:'Getting your location...'};render();
+  navigator.geolocation.getCurrentPosition(
+    async function(pos){
+      var lat=pos.coords.latitude,lon=pos.coords.longitude;
+      S.tlGeoCoords={lat:lat,lon:lon};
+      S.tlGeoStatus={ok:null,msg:'Resolving location...'};render();
+      var loc=await reverseGeocode(lat,lon);
+      if(loc){S.tlManualLocation=loc;S.tlGeoStatus={ok:true,msg:'Location found: '+loc};}
+      else{S.tlManualLocation=lat.toFixed(4)+', '+lon.toFixed(4);S.tlGeoStatus={ok:true,msg:'Location set from GPS coordinates.'};}
+      render();
+    },
+    function(err){
+      var msgs={1:'Location access denied -- please allow location in your browser settings.',2:'Location unavailable.',3:'Location request timed out.'};
+      S.tlGeoStatus={ok:false,msg:msgs[err.code]||'Could not get location.'};render();
+    },
+    {enableHighAccuracy:true,timeout:10000,maximumAge:30000}
+  );
+}
+function tripLogLastStop(){for(var i=S.tripLog.length-1;i>=0;i--){if(S.tripLog[i].type==='stop')return S.tripLog[i];}return null;}
+function tripLogLastStart(){for(var i=S.tripLog.length-1;i>=0;i--){if(S.tripLog[i].type==='start')return S.tripLog[i];}return null;}
+function tripLogIsActive(){if(!S.tripLog.length)return false;return S.tripLog[S.tripLog.length-1].type==='start';}
+function calcElapsed(fromTs,toTs){var ms=toTs-fromTs;var hrs=Math.floor(ms/3600000);var mins=Math.floor((ms%3600000)/60000);return{hrs:hrs,mins:mins,label:hrs+'h '+mins+'m'};}
+function elapsedSinceLastStop(now){var last=tripLogLastStop();if(!last)return null;return calcElapsed(last.timestamp,now);}
+function addTripLogEntry(entry){
+  if(entry.type==='stop'){
+    var lastStart=tripLogLastStart();
+    if(lastStart)entry.tripDuration=calcElapsed(lastStart.timestamp,entry.timestamp);
+    var lastStop=tripLogLastStop();
+    if(lastStop)entry.elapsedSinceLastStop=calcElapsed(lastStop.timestamp,entry.timestamp);
+  }
+  S.tripLog.push(Object.assign({},entry,{id:entry.id||(Date.now()+'_'+Math.random().toString(36).slice(2))}));
+}
+async function tlSaveManualMiles(entryId,val){
+  var miles=parseFloat(val);var entry=S.tripLog.find(function(e){return e.id===entryId;});
+  if(!entry||isNaN(miles)||miles<=0)return;
+  entry.mileageLookup={miles:Math.round(miles),isEstimate:false,manual:true};
+  await saveTripLog();render();
+}
+async function retryStopMileage(entryId){
+  var stopEntry=S.tripLog.find(function(e){return e.id===entryId;});if(!stopEntry)return;
+  var idx=S.tripLog.indexOf(stopEntry);var startEntry=null;
+  for(var i=idx-1;i>=0;i--){if(S.tripLog[i].type==='start'){startEntry=S.tripLog[i];break;}}
+  if(!startEntry){stopEntry.mileageLookup='failed';render();return;}
+  await lookupStopMileage(entryId,startEntry,stopEntry);
+}
+async function routeMilesBetweenEntries(fromEntry,toEntry){
+  if(fromEntry.coords&&toEntry.coords){
+    var lat1=fromEntry.coords.lat,lon1=fromEntry.coords.lon,lat2=toEntry.coords.lat,lon2=toEntry.coords.lon;
+    try{
+      var r=await fetch('https://router.project-osrm.org/route/v1/driving/'+lon1+','+lat1+';'+lon2+','+lat2+'?overview=false');
+      if(r.ok){var d=await r.json();if(d&&d.routes&&d.routes[0]){return{miles:Math.round(d.routes[0].distance*0.000621371),isEstimate:false};}}
+    }catch(e){}
+    return{miles:Math.round(haversine(lat1,lon1,lat2,lon2)*1.25),isEstimate:true};
+  }
+  if(!fromEntry.location||!toEntry.location)return null;
+  return fetchRouteMiles(fromEntry.location,toEntry.location);
+}
+async function lookupStopMileage(entryId,fromEntry,toEntry){
+  var entry=S.tripLog.find(function(e){return e.id===entryId;});if(!entry)return;
+  entry.mileageLookup='pending';render();
+  var result=await routeMilesBetweenEntries(fromEntry,toEntry);
+  entry.mileageLookup=result?{miles:result.miles,isEstimate:result.isEstimate||false}:'failed';
+  await saveTripLog();render();
+}
+async function tlManualStart(){
+  var loc=S.tlManualLocation||'';var coords=S.tlGeoCoords||null;var now=Date.now();
+  addTripLogEntry({type:'start',timestamp:now,location:loc,coords:coords,note:'Manual start',loadId:null,loadRoute:null});
+  S.tlManualLocation='';S.tlGeoStatus=null;S.tlGeoCoords=null;
+  await saveTripLog();render();
+}
+async function tlManualStop(){
+  var loc=S.tlManualLocation||'';var coords=S.tlGeoCoords||null;var now=Date.now();
+  var lastStart=tripLogLastStart();
+  addTripLogEntry({type:'stop',timestamp:now,location:loc,coords:coords,note:'Manual stop',loadId:null,loadRoute:null});
+  S.tlManualLocation='';S.tlGeoStatus=null;S.tlGeoCoords=null;
+  var entry=S.tripLog[S.tripLog.length-1];
+  await saveTripLog();render();
+  if(lastStart&&entry)await lookupStopMileage(entry.id,lastStart,entry);
+}
+async function tlDeleteEntry(id){
+  S.tripLog=S.tripLog.filter(function(e){return e.id!==id;});
+  await saveTripLog();render();
+}
+function fmtDateTime(ts){var d=new Date(ts);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});}
+
+function renderTripLog(){
+  var active=tripLogIsActive();
+  var log=S.tripLog.slice().reverse();
+  var lastStop=tripLogLastStop();
+  var now=Date.now();
+  var currentElapsed=active&&lastStop?elapsedSinceLastStop(now):null;
+  var tlpFilter=S.tlp||'all';
+  return`
+<div class="section-title">Trip Log Report</div>
+<div style="display:flex;gap:5px;margin-bottom:10px;">
+  <button class="period-btn ${S.tlp==='30'?'active':''}" onclick="S.tlp='30';render()">LAST 30 DAYS</button>
+  <button class="period-btn ${S.tlp==='all'?'active':''}" onclick="S.tlp='all';render()">ALL</button>
+</div>
+${(function(){
+  var entries=filterTripLogByPeriod(tlpFilter);
+  if(!entries.length)return'<div style="font-size:12px;color:var(--muted);padding:8px 0 12px;">No trip log entries for this period.</div>';
+  var stops=entries.filter(function(e){return e.type==='stop'&&e.tripDuration;});
+  var totalTripMs=stops.reduce(function(sum,e){return sum+(e.tripDuration.hrs*3600000+e.tripDuration.mins*60000);},0);
+  var totalHrs=Math.floor(totalTripMs/3600000);
+  var totalMins=Math.floor((totalTripMs%3600000)/60000);
+  return'<div class="stat-grid" style="margin-bottom:8px;">'
+    +'<div class="stat-card"><div class="stat-label">Total Entries</div><div class="stat-value blue">'+entries.length+'</div></div>'
+    +'<div class="stat-card"><div class="stat-label">Completed Trips</div><div class="stat-value green">'+stops.length+'</div></div>'
+    +'<div class="stat-card"><div class="stat-label">Total Drive Time</div><div class="stat-value amber" style="font-size:15px;">'+totalHrs+'h '+totalMins+'m</div></div>'
+    +'<div class="stat-card"><div class="stat-label">Load Events</div><div class="stat-value purple">'+entries.filter(function(e){return e.loadId;}).length+'</div></div>'
+    +'</div>';
+})()}
+<button class="btn btn-success btn-full" style="margin-bottom:18px;" onclick="exportTripLog(S.tlp)">DOWNLOAD TRIP LOG CSV</button>
+<div class="section-title">Trip Log</div>
+<div class="card" style="border-color:${active?'rgba(16,185,129,0.4)':'rgba(255,255,255,0.08)'};">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <div style="width:10px;height:10px;border-radius:50%;background:${active?'var(--accent2)':'var(--muted)'};${active?'box-shadow:0 0 6px var(--accent2);':''}"></div>
+    <div style="font-family:var(--fh);font-size:13px;font-weight:700;color:${active?'var(--accent2)':'var(--muted)'};">${active?'TRIP IN PROGRESS':'NO ACTIVE TRIP'}</div>
+  </div>
+  <div class="form-group" style="margin-bottom:8px;">
+    <label class="form-label">Current Location <span style="color:var(--danger)">*</span></label>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input class="form-input" type="text" placeholder="City, State or landmark" value="${S.tlManualLocation||''}"
+        oninput="S.tlManualLocation=this.value"
+        onblur="render()"
+        onkeydown="if(event.key==='Enter'){S.tlManualLocation=this.value;render();this.blur();}"
+        style="${!S.tlManualLocation?'border-color:rgba(239,68,68,0.4);':''}"/>
+      <button class="btn btn-info btn-sm" style="white-space:nowrap;flex-shrink:0;" onclick="tlGeolocate()" title="Use my current location">GPS</button>
+    </div>
+    ${S.tlGeoStatus?'<div class="calc-hint" style="color:'+(S.tlGeoStatus.ok?'var(--accent2)':'var(--danger)')+';">'+S.tlGeoStatus.msg+'</div>':''}
+    ${!S.tlManualLocation&&!S.tlGeoStatus?'<div class="calc-hint" style="color:var(--danger);">Required -- type a location or tap GPS.</div>':''}
+  </div>
+  <div style="display:flex;gap:7px;">
+    <button class="btn btn-success" style="flex:1;${active||!S.tlManualLocation?'opacity:0.4;cursor:not-allowed;':''}" onclick="${!active&&S.tlManualLocation?'tlManualStart()':'null'}">START</button>
+    <button class="btn btn-danger" style="flex:1;${!active||!S.tlManualLocation?'opacity:0.4;cursor:not-allowed;':''}" onclick="${active&&S.tlManualLocation?'tlManualStop()':'null'}">STOP</button>
+  </div>
+  ${active?'<div style="margin-top:10px;display:grid;grid-template-columns:'+(lastStop?'1fr 1fr':'1fr')+';gap:6px;">'
+    +'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Trip In Progress</div>'
+    +'<div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--accent2);">'+(function(){var ls=tripLogLastStart();return ls?calcElapsed(ls.timestamp,now).label:'--';})()+'</div>'
+    +'</div>'
+    +(lastStop&&currentElapsed?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Since Last Stop</div>'
+    +'<div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--accent);">'+currentElapsed.label+'</div>'
+    +'</div>':'')
+    +'</div>':''}
+</div>
+${log.length===0?'<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">No trip entries yet. Start a trip or mark a load as picked up.</div>':''}
+${log.map(function(e){
+  var isStop=e.type==='stop';
+  var isLoadEvent=!!e.loadId;
+  var color=isStop?'var(--danger)':'var(--accent2)';
+  var label=isStop?'STOP':'START';
+  var mileageHtml='';
+  if(isStop){
+    var hasMileage=e.mileageLookup&&e.mileageLookup!=='pending'&&e.mileageLookup!=='failed';
+    mileageHtml='<div style="margin-top:6px;background:var(--surface2);border-radius:6px;padding:7px 10px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;'+(hasMileage?'':'margin-bottom:6px;')+'">'
+      +'<div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;">Trip Mileage</div>'
+      +(e.mileageLookup==='pending'?'<div style="font-size:11px;color:var(--muted);font-style:italic;">Calculating...</div>'
+        :hasMileage?'<div style="text-align:right;"><div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--info);">'+e.mileageLookup.miles.toLocaleString()+' mi</div><div style="font-size:9px;color:var(--muted);">'+(e.mileageLookup.manual?'manual entry':e.mileageLookup.fromLoad?'from load analysis':e.mileageLookup.isEstimate?'estimated':'calculated')+'</div></div>':'')
+      +'</div>'
+      +(!e.mileageLookup||e.mileageLookup==='failed'?'<div style="display:flex;gap:6px;align-items:center;"><input class="form-input" type="number" placeholder="Enter miles driven" style="font-size:12px;padding:5px 8px;" value="'+(e.manualMiles||'')+'" onblur="tlSaveManualMiles(\''+e.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){tlSaveManualMiles(\''+e.id+'\',this.value);this.blur();}"/><button class="btn btn-info btn-sm" style="white-space:nowrap;" onclick="retryStopMileage(\''+e.id+'\')">Auto</button></div>':'')
+      +'</div>';
+  }
+  var statsHtml='';
+  if(isStop&&(e.tripDuration||e.elapsedSinceLastStop)){
+    var cols=[e.tripDuration,e.elapsedSinceLastStop].filter(Boolean).length===2?'1fr 1fr':'1fr';
+    statsHtml='<div style="margin-top:8px;display:grid;grid-template-columns:'+cols+';gap:6px;">'
+      +(e.tripDuration?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Trip Duration</div><div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent2);">'+e.tripDuration.label+'</div></div>':'')
+      +(e.elapsedSinceLastStop?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Since Last Stop</div><div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent);">'+e.elapsedSinceLastStop.label+'</div></div>':'')
+      +'</div>';
+  }
+  return'<div class="card" style="margin-bottom:7px;border-left:3px solid '+color+';padding-left:10px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+    +'<div>'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">'
+    +'<span style="font-family:var(--fh);font-size:12px;font-weight:700;color:'+color+';">'+label+'</span>'
+    +(isLoadEvent?'<span class="badge badge-blue" style="font-size:9px;">LOAD</span>':'')
+    +'</div>'
+    +'<div style="font-size:12px;font-weight:600;color:var(--text);">'+fmtDateTime(e.timestamp)+'</div>'
+    +(e.location?'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+e.location+'</div>':'')
+    +(e.note?'<div style="font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;">'+e.note+'</div>':'')
+    +'</div>'
+    +'<button class="btn btn-outline btn-sm" style="font-size:9px;padding:3px 7px;flex-shrink:0;margin-left:8px;" onclick="tlDeleteEntry(\''+e.id+'\')">X</button>'
+    +'</div>'
+    +statsHtml
+    +mileageHtml
+    +'</div>';
+}).join('')}`;
+}
+
+function render(){
+  var el=document.getElementById('mc');
+  if(!el)return;
+  try{
+    var html='';
+    if(S.tab==='dashboard')html=renderDashboard();
+    else if(S.tab==='analyze')html=renderAnalyze();
+    else if(S.tab==='loads')html=renderLoads();
+    else if(S.tab==='triplog')html=renderTripLog();
+    else if(S.tab==='setup')html=renderSetup();
+    else if(S.tab==='reports')html=renderReports();
+    el.innerHTML=html;
+  }catch(err){
+    el.innerHTML='<div style="background:#1a1d27;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;word-break:break-all;"><div style="font-weight:700;margin-bottom:6px;">App Error (tab: '+S.tab+')</div><div>'+(err&&err.message?err.message:String(err))+'</div></div>';
+  }
+}
+window.onerror=function(msg,src,line,col){
+  var el=document.getElementById('mc');
+  if(el)el.innerHTML='<div style="background:#1a1d27;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;word-break:break-all;"><div style="font-weight:700;margin-bottom:6px;">JS Error</div><div>'+msg+'</div><div style="color:#94a3b8;margin-top:4px;">Line '+line+'</div></div>';
+  return false;
+};
+window.addEventListener('unhandledrejection',function(ev){
+  alert('Export error: '+(ev.reason&&ev.reason.message?ev.reason.message:String(ev.reason)));
+});
+render();
+loadState().then(function(){ render(); checkSubscription(); }).catch(function(err){
+  var el=document.getElementById('mc');
+  if(el)el.innerHTML='<div style="background:#1a1d27;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;">Load Error: '+(err&&err.message?err.message:String(err))+'</div>';
+});
+
+// ── RevenueCat Paywall ──────────────────────────────────────────
+const RC_ENTITLEMENT = 'KB Cooper Enterprises - Load Analyzer Pro';
+let pwSelectedPlan = 'monthly';
+let rcOfferings = null;
+
+// Web Billing public key (rcb_...) from the RevenueCat dashboard
+const RC_WEB_API_KEY = 'rcb_jphxvpPFnhekpssFPQfTlhQSeLYs';
+const RC_WEB_UID_KEY = 'kb_rc_web_uid';
+let rcWeb = null;
+
+// Native plugin in the app; RevenueCat Web Billing in a browser
+function rcPlugin() {
+  var cap = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
+  if (cap) return cap;
+  if (rcWeb) return rcWeb;
+  var RC = window.Purchases;
+  if (!RC || !RC.Purchases || !RC_WEB_API_KEY) return null;
+  var uid = null;
+  try { uid = localStorage.getItem(RC_WEB_UID_KEY); } catch(e) {}
+  if (!uid) {
+    uid = RC.Purchases.generateRevenueCatAnonymousAppUserId();
+    try { localStorage.setItem(RC_WEB_UID_KEY, uid); } catch(e) {}
+  }
+  var p = RC.Purchases.configure({ apiKey: RC_WEB_API_KEY, appUserId: uid });
+  rcWeb = {
+    getCustomerInfo: function() { return p.getCustomerInfo(); },
+    getOfferings: function() { return p.getOfferings(); },
+    purchasePackage: function(o) {
+      return p.purchase({ rcPackage: o.aPackage }).catch(function(e) {
+        if (e && e.errorCode === RC.ErrorCode.UserCancelledError) e.code = 'USER_CANCELLED';
+        throw e;
+      });
+    },
+    restorePurchases: function() { return p.getCustomerInfo(); }
+  };
+  return rcWeb;
+}
+
+function pwSelect(plan) {
+  pwSelectedPlan = plan;
+  document.getElementById('pw-monthly').classList.toggle('selected', plan === 'monthly');
+  document.getElementById('pw-yearly').classList.toggle('selected', plan === 'yearly');
+}
+
+function showPaywall() {
+  document.getElementById('paywall-overlay').style.display = 'flex';
+}
+
+function hidePaywall() {
+  document.getElementById('paywall-overlay').style.display = 'none';
+}
+
+function pwSetError(msg) {
+  var el = document.getElementById('pw-error');
+  if (el) el.textContent = msg || '';
+}
+
+function pwSetLoading(loading) {
+  var btn = document.getElementById('pw-subscribe-btn');
+  if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Processing...' : 'START FREE TRIAL'; }
+}
+
+async function checkSubscription() {
+  try {
+    var Purchases = rcPlugin();
+    if (!Purchases) { S.subscribed = false; S.subChecked = true; showPaywall(); pwSetError('Purchases not available.'); return; }
+    var result = await Purchases.getCustomerInfo();
+    var info = result && result.customerInfo ? result.customerInfo : result;
+    var active = info && info.entitlements && info.entitlements.active;
+    S.subscribed = !!(active && active[RC_ENTITLEMENT]);
+    S.subChecked = true;
+  } catch(e) {
+    S.subscribed = false; S.subChecked = true;
+    console.warn('RC checkSubscription error:', e);
+  }
+  if (!S.subscribed) showPaywall();
+}
+
+async function pwSubscribe() {
+  pwSetError('');
+  pwSetLoading(true);
+  try {
+    var Purchases = rcPlugin();
+    if (!Purchases) { pwSetError('Purchases not available.'); pwSetLoading(false); return; }
+    if (!rcOfferings) {
+      var offerResult = await Purchases.getOfferings();
+      rcOfferings = offerResult && offerResult.offerings ? offerResult.offerings : offerResult;
+    }
+    var current = rcOfferings && rcOfferings.current;
+    if (!current) { pwSetError('No offerings available. Try again later.'); pwSetLoading(false); return; }
+    var pkg = null;
+    if (pwSelectedPlan === 'monthly') {
+      pkg = current.monthly || (current.availablePackages && current.availablePackages.find(function(p){ return p.packageType === 'MONTHLY'; }));
+    } else {
+      pkg = current.annual || current.yearly || (current.availablePackages && current.availablePackages.find(function(p){ return p.packageType === 'ANNUAL'; }));
+    }
+    if (!pkg) { pwSetError('Selected plan not available.'); pwSetLoading(false); return; }
+    var purchaseResult = await Purchases.purchasePackage({ aPackage: pkg });
+    var info = purchaseResult && purchaseResult.customerInfo ? purchaseResult.customerInfo : purchaseResult;
+    var active = info && info.entitlements && info.entitlements.active;
+    if (active && active[RC_ENTITLEMENT]) {
+      S.subscribed = true;
+      hidePaywall();
+      render();
+    } else {
+      pwSetError('Purchase completed but access not granted. Try restoring.');
+    }
+  } catch(e) {
+    if (e && e.code === 'USER_CANCELLED') {
+      pwSetError('');
+    } else {
+      pwSetError('Purchase failed: ' + (e && e.message ? e.message : String(e)));
+    }
+  }
+  pwSetLoading(false);
+}
+
+async function pwRestore() {
+  pwSetError('');
+  pwSetLoading(true);
+  try {
+    var Purchases = rcPlugin();
+    if (!Purchases) { pwSetLoading(false); return; }
+    var result = await Purchases.restorePurchases();
+    var info = result && result.customerInfo ? result.customerInfo : result;
+    var active = info && info.entitlements && info.entitlements.active;
+    if (active && active[RC_ENTITLEMENT]) {
+      S.subscribed = true;
+      hidePaywall();
+      render();
+    } else {
+      pwSetError('No active subscription found.');
+    }
+  } catch(e) {
+    pwSetError('Restore failed: ' + (e && e.message ? e.message : String(e)));
+  }
+  pwSetLoading(false);
+}
+// ── End RevenueCat Paywall ──────────────────────────────────────
+</script>
+
+</body>
+</html>
