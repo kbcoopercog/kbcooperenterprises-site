@@ -20,6 +20,9 @@
 
   <!-- RevenueCat Web Billing (web version only) -->
   <script src="https://cdn.jsdelivr.net/npm/@revenuecat/purchases-js@1.68.0/dist/Purchases.umd.js"></script>
+  <!-- Firebase Auth for web accounts (web version only) -->
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
 
 </head>
 <body style="margin:0;padding:0;background:#0f1117;height:100%;overflow:hidden;">
@@ -43,7 +46,21 @@
   </div>
   <button class="pw-btn" id="pw-subscribe-btn" onclick="pwSubscribe()">START FREE TRIAL</button>
   <div class="pw-restore" onclick="pwRestore()">Restore Previous Purchase</div>
+  <div class="pw-restore" id="pw-signout" style="display:none;margin-top:10px;" onclick="siSignOut()">Sign Out</div>
   <div class="pw-error" id="pw-error"></div>
+</div>
+
+<div id="signin-overlay" style="display:none;">
+  <div class="pw-logo">KB COOPER</div>
+  <div class="pw-sub">Load Analyzer — Professional Edition</div>
+  <form class="si-form" onsubmit="siSubmit();return false;">
+    <input class="si-input" id="si-email" type="email" placeholder="Email" autocomplete="email" required/>
+    <input class="si-input" id="si-password" type="password" placeholder="Password" autocomplete="current-password" required minlength="6"/>
+    <button class="pw-btn" id="si-btn" type="submit">SIGN IN</button>
+  </form>
+  <div class="pw-restore" id="si-toggle" onclick="siToggleMode()">Create an Account</div>
+  <div class="pw-restore" id="si-forgot" style="margin-top:10px;" onclick="siForgot()">Forgot Password?</div>
+  <div class="pw-error" id="si-error"></div>
 </div>
 
 <!-- POD Photo Viewer Overlay -->
@@ -195,6 +212,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
 .pw-btn:disabled{opacity:0.5;}
 .pw-restore{font-size:12px;color:#60a5fa;text-decoration:underline;cursor:pointer;margin-top:4px;}
 .pw-error{font-size:11px;color:#ef4444;margin-top:8px;text-align:center;}
+/* Web sign-in */
+#signin-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1117;z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;}
+.si-form{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;}
+.si-input{width:100%;box-sizing:border-box;padding:14px;margin-bottom:12px;background:#1a1d27;border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-family:'Barlow',sans-serif;font-size:16px;}
+.si-input:focus{outline:none;border-color:#f59e0b;}
+.si-ok{color:#10b981;}
 
 </style>
 
@@ -1671,6 +1694,7 @@ function renderSetup(){
   return`
 <div class="section-title">Setup ${c.configSavedAt?`<span style="font-size:11px;font-weight:400;color:var(--muted);">Active since ${new Date(c.configSavedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`:''}</div>
 ${c.configSavedAt?setupSummaryHtml(c,own,leaseStats):''}
+${siUser?`<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;"><div style="font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;">Signed in as <span style="color:var(--text);">${siUser.email}</span></div><button class="btn btn-outline" style="flex-shrink:0;" onclick="siSignOut()">Sign Out</button></div>`:''}
 <div class="card">${sh('personal','PERSONAL INFO *')}
   <div class="form-group"><label class="form-label">Full Name <span style="color:var(--danger)">*</span></label><input class="form-input" type="text" placeholder="First Last" value="${c.ownerName||''}" oninput="(S.config=S.config||{}).ownerName=this.value"/></div>
   <div class="form-group"><label class="form-label">Driver's License #</label><input class="form-input" type="text" placeholder="License number" value="${c.driversLicense||''}" oninput="(S.config=S.config||{}).driversLicense=this.value"/></div>
@@ -2190,8 +2214,97 @@ let rcOfferings = null;
 
 // Web Billing public key (rcb_...) from the RevenueCat dashboard
 const RC_WEB_API_KEY = 'rcb_jphxvpPFnhekpssFPQfTlhQSeLYs';
-const RC_WEB_UID_KEY = 'kb_rc_web_uid';
 let rcWeb = null;
+
+// Firebase project for web accounts
+const FB_CONFIG = {
+  apiKey: 'AIzaSyDi9dZk7Mua9A9thNEWmFVDDz5ajxJgjMs',
+  authDomain: 'kbcooper-load-analyzer.firebaseapp.com',
+  projectId: 'kbcooper-load-analyzer',
+  appId: '1:169555378435:web:9612a21646fa7ad467a936'
+};
+let siUser = null;
+let siMode = 'signin';
+
+function isNativeApp() {
+  return !!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases);
+}
+
+// Resolves with the signed-in Firebase user, or null
+function siCurrentUser() {
+  if (!window.firebase || !FB_CONFIG) return Promise.resolve(null);
+  if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  return new Promise(function(resolve) {
+    var off = firebase.auth().onAuthStateChanged(function(u) { off(); siUser = u; resolve(u); });
+  });
+}
+
+function showSignIn() {
+  document.getElementById('signin-overlay').style.display = 'flex';
+}
+
+function hideSignIn() {
+  document.getElementById('signin-overlay').style.display = 'none';
+}
+
+function siSetError(msg, ok) {
+  var el = document.getElementById('si-error');
+  if (el) { el.textContent = msg || ''; el.classList.toggle('si-ok', !!ok); }
+}
+
+function siErrorText(e) {
+  var code = e && e.code || '';
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Incorrect email or password.';
+  if (code === 'auth/email-already-in-use') return 'An account with this email already exists.';
+  if (code === 'auth/weak-password') return 'Password must be at least 6 characters.';
+  if (code === 'auth/invalid-email') return 'Enter a valid email address.';
+  if (code === 'auth/too-many-requests') return 'Too many attempts. Try again later.';
+  return (e && e.message) || String(e);
+}
+
+function siToggleMode() {
+  siMode = siMode === 'signin' ? 'create' : 'signin';
+  document.getElementById('si-btn').textContent = siMode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT';
+  document.getElementById('si-toggle').textContent = siMode === 'signin' ? 'Create an Account' : 'Have an Account? Sign In';
+  document.getElementById('si-forgot').style.display = siMode === 'signin' ? '' : 'none';
+  document.getElementById('si-password').autocomplete = siMode === 'signin' ? 'current-password' : 'new-password';
+  siSetError('');
+}
+
+async function siSubmit() {
+  var email = document.getElementById('si-email').value.trim();
+  var password = document.getElementById('si-password').value;
+  var btn = document.getElementById('si-btn');
+  siSetError('');
+  btn.disabled = true;
+  try {
+    var auth = firebase.auth();
+    var cred = siMode === 'signin'
+      ? await auth.signInWithEmailAndPassword(email, password)
+      : await auth.createUserWithEmailAndPassword(email, password);
+    siUser = cred.user;
+    hideSignIn();
+    checkSubscription();
+  } catch(e) {
+    siSetError(siErrorText(e));
+  }
+  btn.disabled = false;
+}
+
+async function siForgot() {
+  var email = document.getElementById('si-email').value.trim();
+  if (!email) { siSetError('Enter your email above first.'); return; }
+  try {
+    await firebase.auth().sendPasswordResetEmail(email);
+    siSetError('Password reset email sent.', true);
+  } catch(e) {
+    siSetError(siErrorText(e));
+  }
+}
+
+function siSignOut() {
+  firebase.auth().signOut().then(function() { location.reload(); });
+}
 
 // Native plugin in the app; RevenueCat Web Billing in a browser
 function rcPlugin() {
@@ -2199,19 +2312,14 @@ function rcPlugin() {
   if (cap) return cap;
   if (rcWeb) return rcWeb;
   var RC = window.Purchases;
-  if (!RC || !RC.Purchases || !RC_WEB_API_KEY) return null;
-  var uid = null;
-  try { uid = localStorage.getItem(RC_WEB_UID_KEY); } catch(e) {}
-  if (!uid) {
-    uid = RC.Purchases.generateRevenueCatAnonymousAppUserId();
-    try { localStorage.setItem(RC_WEB_UID_KEY, uid); } catch(e) {}
-  }
-  var p = RC.Purchases.configure({ apiKey: RC_WEB_API_KEY, appUserId: uid });
+  if (!RC || !RC.Purchases || !RC_WEB_API_KEY || !siUser) return null;
+  // Subscriptions belong to the account, so they follow it to any device
+  var p = RC.Purchases.configure({ apiKey: RC_WEB_API_KEY, appUserId: siUser.uid });
   rcWeb = {
     getCustomerInfo: function() { return p.getCustomerInfo(); },
     getOfferings: function() { return p.getOfferings(); },
     purchasePackage: function(o) {
-      return p.purchase({ rcPackage: o.aPackage }).catch(function(e) {
+      return p.purchase({ rcPackage: o.aPackage, customerEmail: siUser.email }).catch(function(e) {
         if (e && e.errorCode === RC.ErrorCode.UserCancelledError) e.code = 'USER_CANCELLED';
         throw e;
       });
@@ -2246,6 +2354,10 @@ function pwSetLoading(loading) {
 }
 
 async function checkSubscription() {
+  if (!isNativeApp()) {
+    if (!siUser && !(await siCurrentUser())) { S.subscribed = false; S.subChecked = true; showSignIn(); return; }
+    document.getElementById('pw-signout').style.display = '';
+  }
   try {
     var Purchases = rcPlugin();
     if (!Purchases) { S.subscribed = false; S.subChecked = true; showPaywall(); pwSetError('Purchases not available.'); return; }
