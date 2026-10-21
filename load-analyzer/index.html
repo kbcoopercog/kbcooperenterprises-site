@@ -25,7 +25,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
 
 </head>
-<body style="margin:0;padding:0;background:#0d1f3c;height:100%;overflow:hidden;">
+<body style="margin:0;padding:0;background:#f4f6f9;height:100%;overflow:hidden;">
 <div id="paywall-overlay" style="display:none;">
   <div class="pw-logo">KB COOPER</div>
   <div class="pw-sub">Load Analyzer — Professional Edition</div>
@@ -33,14 +33,14 @@
   <div class="pw-card selected" id="pw-monthly" onclick="pwSelect('monthly')">
     <div class="pw-card-top">
       <div class="pw-card-name">Monthly</div>
-      <div class="pw-card-price">$3.49<span style="font-size:13px;font-weight:400;color:#94a3b8;">/mo</span></div>
+      <div class="pw-card-price">$3.49<span style="font-size:13px;font-weight:400;color:#dde4ee;">/mo</span></div>
     </div>
     <div class="pw-card-desc">Billed monthly after free trial</div>
   </div>
   <div class="pw-card" id="pw-yearly" onclick="pwSelect('yearly')">
     <div class="pw-card-top">
       <div class="pw-card-name">Yearly <span style="font-size:11px;background:#10b981;color:#0d1f3c;border-radius:4px;padding:2px 6px;font-weight:700;">SAVE 28%</span></div>
-      <div class="pw-card-price">$29.99<span style="font-size:13px;font-weight:400;color:#94a3b8;">/yr</span></div>
+      <div class="pw-card-price">$29.99<span style="font-size:13px;font-weight:400;color:#dde4ee;">/yr</span></div>
     </div>
     <div class="pw-card-desc">Billed yearly after free trial — best value</div>
   </div>
@@ -74,7 +74,7 @@
   <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,16px);">
     <div style="padding:16px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e0e0e0;flex-shrink:0;">
       <div style="font-size:13px;font-weight:700;color:#111;letter-spacing:0.5px;">SEND PROOF OF DELIVERY</div>
-      <button onclick="closePODSend()" style="background:none;border:none;color:#888;font-size:24px;cursor:pointer;padding:0;line-height:1;width:32px;height:32px;">×</button>
+      <button onclick="closePODSend()" style="background:none;border:none;color:#555;font-size:24px;cursor:pointer;padding:0;line-height:1;width:32px;height:32px;">×</button>
     </div>
     <div style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px;flex:1;">
       <div id="pod-send-details" style="background:#f5f5f5;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#222;line-height:1.7;white-space:pre-wrap;word-break:break-word;"></div>
@@ -82,43 +82,43 @@
     <div style="padding:0 16px 14px;flex-shrink:0;">
       <button style="width:100%;margin-bottom:8px;padding:12px;font-size:12px;font-weight:600;border:2px solid #555;background:#fff;color:#333;border-radius:8px;cursor:pointer;" onclick="openPODMailto()">✉️ OPEN IN MAIL (recipients pre-filled, no photos)</button>
       <button style="width:100%;padding:13px;font-size:13px;font-weight:700;background:#2196f3;color:#fff;border:none;border-radius:8px;cursor:pointer;" onclick="sharePODPhotos()">📎 SHARE WITH PHOTOS</button>
-      <div style="font-size:10px;color:#888;text-align:center;margin-top:8px;">Open in Mail to pre-fill recipients · Share with Photos to attach images</div>
+      <div style="font-size:10px;color:#555;text-align:center;margin-top:8px;">Open in Mail to pre-fill recipients · Share with Photos to attach images</div>
     </div>
   </div>
 </div>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap');
-:root{--bg:#0d1f3c;--surface:#142a4f;--surface2:#1a3560;--border:rgba(255,255,255,0.08);--accent:#c8a84b;--accent2:#10b981;--danger:#ef4444;--info:#60a5fa;--purple:#a78bfa;--text:#f1f5f9;--muted:#94a3b8;--fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;}
+:root{--bg:#f4f6f9;--surface:#ffffff;--surface2:#eef2f7;--border:rgba(13,31,60,0.14);--accent:#c8a84b;--accent-text:#8a6a12;--navy:#0d1f3c;--accent2:#047857;--danger:#dc2626;--info:#1d4ed8;--purple:#6d28d9;--text:#1a1a2e;--muted:#3f4a5c;--fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;}
 .app{padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);}
 
 html{height:100%;}
-.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:420px;margin:0 auto;background:var(--bg);color:var(--text);font-family:var(--fb);position:fixed;top:0;left:0;right:0;bottom:0;max-width:420px;margin:0 auto;}
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 14px 9px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:420px;margin:0 auto;background:var(--bg);color:var(--text);font-family:var(--fb);position:fixed;top:0;left:0;right:0;bottom:0;max-width:420px;margin:0 auto;box-shadow:0 0 24px rgba(13,31,60,0.12);}
+.header{background:var(--navy);border-bottom:1px solid rgba(255,255,255,0.08);padding:11px 14px 9px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .brand-name{font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:2px;color:var(--accent);line-height:1;}
-.brand-sub{font-family:var(--fh);font-size:18px;font-weight:700;letter-spacing:1px;color:var(--text);line-height:1.1;margin-top:1px;}
-.brand-tag{font-size:9px;color:var(--muted);letter-spacing:0.8px;margin-top:2px;}
-.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
-.nav-btn{flex:0 0 auto;padding:9px 10px 7px;font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:0.3px;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.brand-sub{font-family:var(--fh);font-size:18px;font-weight:700;letter-spacing:1px;color:#ffffff;line-height:1.1;margin-top:1px;}
+.brand-tag{font-size:9px;color:rgba(255,255,255,0.85);letter-spacing:0.8px;margin-top:2px;}
+.nav{display:flex;background:var(--navy);border-bottom:1px solid rgba(255,255,255,0.08);overflow-x:auto;flex-shrink:0;}
+.nav-btn{flex:0 0 auto;padding:9px 10px 7px;font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:0.3px;background:none;border:none;color:rgba(255,255,255,0.85);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
 .nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
 .content{flex:1;padding:13px;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;}
-.section-title{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:9px;text-transform:uppercase;}
+.section-title{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:1px;color:var(--accent-text);margin-bottom:9px;text-transform:uppercase;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
 .form-group{margin-bottom:9px;}
 .form-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;display:block;}
-.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--fb);font-size:13px;outline:none;transition:border-color 0.15s;}
+.form-input,.form-select,.form-textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--fb);font-size:13px;outline:none;transition:border-color 0.15s;}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
-.form-select option{background:var(--bg);}
+.form-select option{background:#fff;}
 .form-textarea{resize:vertical;min-height:70px;line-height:1.5;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .btn{padding:9px 13px;border-radius:6px;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:0.5px;cursor:pointer;border:none;transition:all 0.15s;}
-.btn-primary{background:var(--accent);color:#0d1f3c;}
-.btn-success{background:var(--accent2);color:#0d1f3c;}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-success{background:var(--navy);color:#fff;}
 .btn-danger{background:var(--danger);color:#fff;}
-.btn-outline{background:none;border:1px solid var(--border);color:var(--text);}
-.btn-info{background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:var(--info);}
-.btn-purple{background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);color:var(--purple);}
+.btn-outline{background:#fff;border:1px solid var(--navy);color:var(--navy);}
+.btn-info{background:var(--navy);border:1px solid var(--navy);color:#fff;}
+.btn-purple{background:var(--navy);border:1px solid var(--navy);color:#fff;}
 .btn-sm{padding:5px 9px;font-size:11px;}
 .btn-full{width:100%;}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
@@ -126,7 +126,7 @@ html{height:100%;}
 .stat-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;}
 .stat-value{font-family:var(--fh);font-size:20px;font-weight:700;}
 .stat-value.green{color:var(--accent2);}
-.stat-value.amber{color:var(--accent);}
+.stat-value.amber{color:var(--accent-text);}
 .stat-value.red{color:var(--danger);}
 .stat-value.blue{color:var(--info);}
 .stat-value.purple{color:var(--purple);}
@@ -136,7 +136,7 @@ html{height:100%;}
 .load-route{font-family:var(--fh);font-size:14px;font-weight:600;}
 .load-profit{font-family:var(--fh);font-size:17px;font-weight:700;}
 .badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:0.3px;}
-.badge-amber{background:rgba(200,168,75,0.15);color:var(--accent);}
+.badge-amber{background:rgba(200,168,75,0.15);color:var(--accent-text);}
 .badge-green{background:rgba(16,185,129,0.15);color:var(--accent2);}
 .badge-red{background:rgba(239,68,68,0.15);color:var(--danger);}
 .badge-blue{background:rgba(96,165,250,0.15);color:var(--info);}
@@ -152,21 +152,21 @@ html{height:100%;}
 .big-profit-val{font-family:var(--fh);font-size:36px;font-weight:700;}
 .alert{padding:9px 11px;border-radius:6px;font-size:12px;margin-bottom:9px;line-height:1.5;}
 .alert-info{background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:var(--info);}
-.alert-warn{background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.3);color:var(--accent);}
+.alert-warn{background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.3);color:var(--accent-text);}
 .alert-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--danger);}
 .alert-purple{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);color:var(--purple);}
 .period-btn{flex:1;padding:6px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--fh);}
-.period-btn.active{background:var(--surface2);color:var(--text);border-color:var(--muted);}
+.period-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
 .threshold-alert{border-radius:8px;padding:9px 11px;margin-bottom:9px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;}
 .threshold-pass{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:var(--accent2);}
 .threshold-fail{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:var(--danger);}
 .hos-box{background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.25);border-radius:8px;padding:11px;margin-bottom:9px;}
 .hos-title{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--info);letter-spacing:0.5px;margin-bottom:7px;}
 .hos-warn{background:rgba(200,168,75,0.07);border:1px solid rgba(200,168,75,0.25);}
-.hos-warn .hos-title{color:var(--accent);}
+.hos-warn .hos-title{color:var(--accent-text);}
 .counteroffer-box{background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.3);border-radius:8px;padding:12px;margin-top:8px;}
 .counteroffer-title{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--purple);letter-spacing:0.5px;margin-bottom:8px;}
-.map-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(96,165,250,0.3);background:rgba(96,165,250,0.08);color:var(--info);font-family:var(--fh);text-decoration:none;}
+.map-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--navy);background:var(--navy);color:#fff;font-family:var(--fh);text-decoration:none;}
 .sub-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin:10px 0 7px;padding-bottom:4px;border-bottom:1px solid var(--border);}
 .sub-section:first-child{margin-top:0;}
 .override-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
@@ -193,7 +193,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .type-btn{flex:1;padding:3px 5px;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--fh);letter-spacing:0.3px;text-align:center;}
 .type-btn.active-rate{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:var(--danger);}
 .type-btn.active-addon{background:rgba(96,165,250,0.15);border-color:rgba(96,165,250,0.4);color:var(--info);}
-input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:pointer;}
+input[type=date]::-webkit-calendar-picker-indicator{filter:none;cursor:pointer;}
 .setup-card-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding:2px 0;}
 .setup-card-toggle{font-size:14px;color:var(--muted);font-weight:700;}
 
@@ -206,7 +206,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
 .pw-card-top{display:flex;justify-content:space-between;align-items:center;}
 .pw-card-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#f1f5f9;}
 .pw-card-price{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#c8a84b;}
-.pw-card-desc{font-size:11px;color:#94a3b8;margin-top:4px;}
+.pw-card-desc{font-size:11px;color:#dde4ee;margin-top:4px;}
 .pw-trial{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:8px 12px;text-align:center;font-size:12px;color:#10b981;margin-bottom:20px;width:100%;max-width:360px;box-sizing:border-box;}
 .pw-btn{width:100%;max-width:360px;padding:16px;background:#c8a84b;color:#0d1f3c;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;margin-bottom:10px;}
 .pw-btn:disabled{opacity:0.5;}
@@ -228,7 +228,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:po
       <div class="brand-sub">LOAD ANALYZER</div>
       <div class="brand-tag">FREIGHT PROFITABILITY PLATFORM</div>
     </div>
-    <div id="hv" style="text-align:right;font-size:10px;color:var(--muted);"></div>
+    <div id="hv" style="text-align:right;font-size:10px;color:rgba(255,255,255,0.85);"></div>
   </div>
   <div class="nav">
     <button class="nav-btn active" onclick="showTab('dashboard')">DASH</button>
@@ -863,7 +863,7 @@ function hosBlock(a,f){
   <div class="info-row"><span class="info-key">Days Required (10 hr @ 75 mph)</span><span class="info-val">${hos.drivingDays} day${hos.drivingDays>1?'s':''}</span></div>
   <div class="info-row"><span class="info-key">Overnight Stays</span><span class="info-val" style="color:${a.overnights>0?'var(--accent)':'var(--accent2)'}">${a.overnights}</span></div>
   ${a.overnights>0?`<div class="info-row"><span class="info-key">Motel (${a.overnights} nights @ ${fmt(a.motelRate)})</span><span class="info-val" style="color:var(--danger)">-${fmt(a.motelCost)}</span></div>`:''}
-  ${hos.exceedsOneDay?`<div style="font-size:11px;color:var(--accent);margin-top:6px;">Multi-day load. Overnight costs included in expense total.</div>`:''}
+  ${hos.exceedsOneDay?`<div style="font-size:11px;color:var(--accent-text);margin-top:6px;">Multi-day load. Overnight costs included in expense total.</div>`:''}
   <div class="override-row">
     <span style="font-size:11px;color:var(--muted);white-space:nowrap;">Override days:</span>
     <input class="form-input" type="number" min="1" style="width:70px;padding:5px 8px;font-size:12px;" placeholder="${hos.drivingDays}" value="${f.tripDaysOverride||''}"
@@ -900,7 +900,7 @@ function renderDashboard(){
   const notPickedUp=allAcc.filter(l=>!l.pickedUpAt);
   const inTransit=allAcc.filter(l=>l.pickedUpAt&&!l.deliveredAt);
   const leaseStats=leaseMileStats();
-  document.getElementById('hv').innerHTML=c.vehicleType?`<span style="color:var(--accent)">${c.vehicleType}</span><br>${c.ownership||''}`:'<span style="color:var(--danger)">No setup</span>';
+  document.getElementById('hv').innerHTML=c.vehicleType?`<span style="color:var(--accent)">${c.vehicleType}</span><br>${c.ownership||''}`:'<span style="color:#f87171">No setup</span>';
   return`
 <div class="section-title">Summary</div>
 <div style="display:flex;gap:5px;margin-bottom:10px;">
@@ -934,7 +934,7 @@ ${(notPickedUp.length>0||inTransit.length>0)?`
       <span class="badge badge-amber" style="font-size:9px;">${notPickedUp.length}</span>
       Awaiting Pickup
     </span>
-    <span class="info-val" style="color:var(--accent);font-size:11px;">${notPickedUp.map(l=>`<div>${l.route||'Unnamed'}</div>`).join('')}</span>
+    <span class="info-val" style="color:var(--accent-text);font-size:11px;">${notPickedUp.map(l=>`<div>${l.route||'Unnamed'}</div>`).join('')}</span>
   </div>`:''}
   ${inTransit.length>0?`
   <div class="info-row" style="${notPickedUp.length>0?'':''}">
@@ -989,7 +989,7 @@ function renderAnalyze(){
 <div class="counteroffer-box" id="co-section-inner">
   <div class="counteroffer-title">COUNTEROFFER</div>
   ${!marginMet?`
-  <div class="info-row"><span class="info-key">Minimum Rate Needed</span><span class="info-val" style="color:var(--accent);font-weight:700;">${fmt(coData.suggestedRate||0)}</span></div>
+  <div class="info-row"><span class="info-key">Minimum Rate Needed</span><span class="info-val" style="color:var(--accent-text);font-weight:700;">${fmt(coData.suggestedRate||0)}</span></div>
   `:`<div class="alert alert-info" style="font-size:11px;margin-bottom:8px;">Load meets your minimum revenue threshold -- enter your counteroffer rate below or accept.</div>`}
   <div class="form-group" style="margin-top:${marginMet?'0':'10px'};">
     <label class="form-label" style="color:var(--purple)">MY COUNTEROFFER RATE ($)</label>
@@ -1043,7 +1043,7 @@ function renderAnalyze(){
 <div class="card" style="margin-bottom:10px;cursor:pointer;border-color:rgba(200,168,75,0.3);" onclick="S.inputsCollapsed=!S.inputsCollapsed;render()">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
-      <div style="font-family:var(--fh);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:0.8px;text-transform:uppercase;">LOAD INPUTS</div>
+      <div style="font-family:var(--fh);font-size:12px;font-weight:700;color:var(--accent-text);letter-spacing:0.8px;text-transform:uppercase;">LOAD INPUTS</div>
       <div style="font-size:11px;color:var(--muted);margin-top:3px;">
         ${f.rate?`<span style="color:var(--text);font-weight:600;">${fmt(pf(f.rate))}</span>`:''}
         ${f.tripMiles?` . ${f.tripMiles} mi`:''}
@@ -1186,7 +1186,7 @@ ${S.analysisReady&&a?`
   ${thresholdAlert(a.rpm,f)}
   <div class="analysis-box">
     <div class="sub-section" style="margin-top:0;">REVENUE</div>
-    <div class="info-row"><span class="info-key">Shipper Rate</span><span class="info-val" style="color:var(--accent)">${fmt(pf(f.rate))}</span></div>
+    <div class="info-row"><span class="info-key">Shipper Rate</span><span class="info-val" style="color:var(--accent-text)">${fmt(pf(f.rate))}</span></div>
     <div class="sub-section">TRIP DETAILS</div>
     <div class="info-row"><span class="info-key">Total Miles</span><span class="info-val">${fmtN(a.totalMiles,1)} mi</span></div>
     <div class="info-row"><span class="info-key">Diesel Used</span><span class="info-val">${fmtN(a.gallons,2)} gal</span></div>
@@ -1232,7 +1232,7 @@ async function lookupRoute(){
   const btn=document.querySelector('[onclick="lookupRoute()"]');if(btn)btn.textContent='...';
   const res=await fetchRouteMiles(f.pickupCity,f.dropoffCity);
   if(btn)btn.textContent='CALCULATE ROUTE MILES';
-  if(res){S.af.routeInfo=res;if(!S.af.tripMiles)S.af.tripMiles=Math.round(res.miles);render();if(res.isEstimate&&el)el.innerHTML='<span style="color:var(--accent)">~'+res.miles.toLocaleString()+' mi (estimated -- verify manually)</span>';}
+  if(res){S.af.routeInfo=res;if(!S.af.tripMiles)S.af.tripMiles=Math.round(res.miles);render();if(res.isEstimate&&el)el.innerHTML='<span style="color:var(--accent-text)">~'+res.miles.toLocaleString()+' mi (estimated -- verify manually)</span>';}
   else{if(el)el.innerHTML='<span style="color:var(--danger)">Could not locate one or both addresses -- try adding the state (e.g. Hendricks, MN) or enter miles manually.</span>';}
 }
 function doLookupDiesel(){
@@ -1247,7 +1247,7 @@ function doLookupDiesel(){
   const fuelCode=fuelType==='Diesel'?4:1;
   const gbUrl='https://www.gasbuddy.com/home?search='+encodeURIComponent(city)+'&fuel='+fuelCode;
   window.open(gbUrl,'_blank');
-  if(el)el.innerHTML='<span style="color:var(--accent)">GasBuddy opened for '+fuelType+' in '+city+' -- enter the price you see above.</span>';
+  if(el)el.innerHTML='<span style="color:var(--accent-text)">GasBuddy opened for '+fuelType+' in '+city+' -- enter the price you see above.</span>';
 }
 async function doGenerateCO(){
   const btn=document.getElementById('co-btn');if(btn)btn.textContent='FETCHING...';
@@ -1511,13 +1511,13 @@ function loadItemHtml(l){
     </div>
     <div style="text-align:right">
       ${isCO&&l.counterofferRate!=null?`
-        <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent);">${fmt(l.counterofferRate)}</div>
+        <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent-text);">${fmt(l.counterofferRate)}</div>
         <div style="font-size:10px;color:var(--muted);text-align:right;margin-bottom:2px;">CO rate</div>
         <div class="load-profit" style="color:${l.counterofferProfit>=0?'var(--accent2)':'var(--danger)'}">${l.counterofferProfit<0?'-':''}${fmt(l.counterofferProfit)}</div>
         <div style="font-size:10px;color:var(--muted);text-align:right;">est. profit</div>
         <div style="font-size:10px;color:var(--purple);text-align:right;margin-top:2px;">Orig: ${fmt(l.rate)}</div>
       `:`
-        <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent);">${fmt(l.rate)}</div>
+        <div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent-text);">${fmt(l.rate)}</div>
         <div style="font-size:10px;color:var(--muted);text-align:right;margin-bottom:2px;">load amount</div>
         <div class="load-profit" style="color:${l.profit>=0?'var(--accent2)':'var(--danger)'}">${l.profit<0?'-':''}${fmt(l.profit)}</div>
         <div style="font-size:10px;color:var(--muted);text-align:right;">${fmtN(l.rpm,3)}/mi</div>
@@ -1621,7 +1621,7 @@ function renderLoads(){
   <button class="period-btn" onclick="S.lp='month';render()">MONTH</button>
   <button class="period-btn" onclick="S.lp='year';render()">YEAR</button>
   <button class="period-btn" onclick="S.lp='all';render()">ALL</button>
-  <button class="period-btn active" onclick="S.lp='active';render()" style="border-color:var(--accent2);color:var(--accent2);">ACTIVE</button>
+  <button class="period-btn active" onclick="S.lp='active';render()">ACTIVE</button>
 </div>
 ${allCo.length>0?`<div class="alert alert-purple" style="margin-bottom:10px;">${allCo.length} counteroffer${allCo.length>1?'s':''} pending -- auto-decline after 48 hours.</div>`:''}
 ${activeAcc.length===0&&allCo.length===0?`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">No active loads -- all accepted loads have been delivered.</div>`:''}
@@ -1642,7 +1642,7 @@ ${allCo.length>0?groupSection('Pending Counteroffers',allCo,'counteroffer','var(
   <button class="period-btn ${S.lp==='month'?'active':''}" onclick="S.lp='month';render()">MONTH</button>
   <button class="period-btn ${S.lp==='year'?'active':''}" onclick="S.lp='year';render()">YEAR</button>
   <button class="period-btn ${S.lp==='all'?'active':''}" onclick="S.lp='all';render()">ALL</button>
-  <button class="period-btn ${S.lp==='active'?'active':''}" onclick="S.lp='active';render()" style="border-color:var(--accent2);color:var(--accent2);">ACTIVE</button>
+  <button class="period-btn ${S.lp==='active'?'active':''}" onclick="S.lp='active';render()">ACTIVE</button>
 </div>
 ${allCo.length>0?`<div class="alert alert-purple" style="margin-bottom:10px;">${allCo.length} counteroffer${allCo.length>1?'s':''} pending -- auto-decline after 48 hours.</div>`:''}
 ${groupSection('Accepted',acc,'accepted','var(--accent2)')}
@@ -1680,7 +1680,7 @@ function setupSummaryHtml(c,own,leaseStats){
   ${c.brokerFeeRate?`<div class="info-row"><span class="info-key">Broker Fee Rate</span><span class="info-val">${c.brokerFeeRate}%</span></div>`:''}
   ${c.defaultMotelRate?`<div class="info-row"><span class="info-key">Default Motel Rate</span><span class="info-val">${fmt(c.defaultMotelRate)}/night</span></div>`:''}
   ${c.monthlyInsurance?`<div class="info-row"><span class="info-key">Monthly Insurance</span><span class="info-val" style="color:var(--danger)">${fmt(c.monthlyInsurance)}/mo</span></div>`:''}
-  ${c.minRPM?`<div class="info-row"><span class="info-key">Min Revenue/Mile</span><span class="info-val" style="color:var(--accent)">${fmtN(c.minRPM,3)}/mi</span></div>`:''}
+  ${c.minRPM?`<div class="info-row"><span class="info-key">Min Revenue/Mile</span><span class="info-val" style="color:var(--accent-text)">${fmtN(c.minRPM,3)}/mi</span></div>`:''}
   ${c.targetMargin?`<div class="info-row"><span class="info-key">Target Profit %</span><span class="info-val">${c.targetMargin}%</span></div>`:''}
   ${c.agreementAccepted?`<div class="info-row"><span class="info-key">User Agreement</span><span class="info-val" style="color:var(--accent2)">Accepted</span></div>`:''}
 </div></div>`;
@@ -1791,20 +1791,18 @@ async function doSaveSetup(){
 
 // -- Render: Reports ----------------------------------------------
 function renderReports(){
-  const wk=getPeriodLoads('week'),pwk=getPeriodLoads('prevweek'),mo=getPeriodLoads('month'),pmo=getPeriodLoads('prevmonth'),yr=getPeriodLoads('year');
-  const tw=sumLoads(wk),tpw=sumLoads(pwk),tm=sumLoads(mo),tpm=sumLoads(pmo),ty=sumLoads(yr);
   const leaseStats=leaseMileStats();
-  const rpCollapsed=S.rpCollapsed||{week:false,month:true};
+  const rpCollapsed=S.rpCollapsed||{};
   const pt=(key,label,t,count,expectedOverhead)=>{
     const open=!rpCollapsed[key];
     const overUnder=expectedOverhead!=null?t.profit-expectedOverhead:null;
     return`<div class="card" style="margin-bottom:10px;">
   <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;" onclick="S.rpCollapsed=S.rpCollapsed||{};S.rpCollapsed['${key}']=!S.rpCollapsed['${key}'];render()">
-    <div style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.8px;color:var(--accent);text-transform:uppercase;">${label} <span style="font-size:11px;font-weight:400;color:var(--muted)">(${count} loads)</span></div>
+    <div style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:0.8px;color:var(--accent-text);text-transform:uppercase;">${label} <span style="font-size:11px;font-weight:400;color:var(--muted)">(${count} loads)</span></div>
     <span style="font-size:16px;font-weight:700;color:var(--muted);">${open?'-':'+'}</span>
   </div>
   ${open?`<div style="margin-top:8px;">
-  <div class="info-row"><span class="info-key">Revenue</span><span class="info-val" style="color:var(--accent)">${fmt(t.revenue)}</span></div>
+  <div class="info-row"><span class="info-key">Revenue</span><span class="info-val" style="color:var(--accent-text)">${fmt(t.revenue)}</span></div>
   <div class="info-row"><span class="info-key">Gas Cost</span><span class="info-val" style="color:var(--danger)">-${fmt(t.gasCost)}</span></div>
   <div class="info-row"><span class="info-key">Mileage Cost</span><span class="info-val" style="color:var(--danger)">-${fmt(t.milesCost)}</span></div>
   <div class="info-row"><span class="info-key">Vehicle Payment</span><span class="info-val" style="color:var(--danger)">-${fmt(t.vehicleProration)}</span></div>
@@ -1846,10 +1844,13 @@ function renderReports(){
   </div>
   <button class="btn btn-info btn-full" onclick="exportCSV(S.rp)">EXPORT ${S.rp==='all'?'ALL':S.rp==='prevweek'?'PREV WEEK':S.rp==='prevmonth'?'PREV MONTH':S.rp.toUpperCase()} TO CSV</button>
 </div>
-${pt('week','THIS WEEK',tw,wk.length,bench?bench.weekly:null)}
-${pt('prevweek','PREV WEEK',tpw,pwk.length,bench?bench.weekly:null)}
-${pt('month','THIS MONTH',tm,mo.length,bench?bench.monthly:null)}
-${pt('prevmonth','PREV MONTH',tpm,pmo.length,bench?bench.monthly:null)}
+${(()=>{
+  // Report card follows the selected period button
+  const labels={week:'THIS WEEK',prevweek:'PREV WEEK',month:'THIS MONTH',prevmonth:'PREV MONTH',year:'YEAR',all:'ALL TIME'};
+  const overhead={week:'weekly',prevweek:'weekly',month:'monthly',prevmonth:'monthly',year:'yearly'};
+  const rpLoads=S.rp==='all'?S.loads.filter(l=>l.status==='accepted'):getPeriodLoads(S.rp);
+  return pt(S.rp,labels[S.rp],sumLoads(rpLoads),rpLoads.length,bench&&overhead[S.rp]?bench[overhead[S.rp]]:null);
+})()}
 ${leaseStats?`
 <div class="card">
   <div class="sub-section" style="margin-top:0">LEASE MILE STATUS</div>
@@ -2099,7 +2100,7 @@ ${(function(){
 })()}
 <button class="btn btn-success btn-full" style="margin-bottom:18px;" onclick="exportTripLog(S.tlp)">DOWNLOAD TRIP LOG CSV</button>
 <div class="section-title">Trip Log</div>
-<div class="card" style="border-color:${active?'rgba(16,185,129,0.4)':'rgba(255,255,255,0.08)'};">
+<div class="card" style="border-color:${active?'rgba(16,185,129,0.4)':'rgba(13,31,60,0.14)'};">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
     <div style="width:10px;height:10px;border-radius:50%;background:${active?'var(--accent2)':'var(--muted)'};${active?'box-shadow:0 0 6px var(--accent2);':''}"></div>
     <div style="font-family:var(--fh);font-size:13px;font-weight:700;color:${active?'var(--accent2)':'var(--muted)'};">${active?'TRIP IN PROGRESS':'NO ACTIVE TRIP'}</div>
@@ -2128,7 +2129,7 @@ ${(function(){
     +'</div>'
     +(lastStop&&currentElapsed?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;">'
     +'<div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Since Last Stop</div>'
-    +'<div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--accent);">'+currentElapsed.label+'</div>'
+    +'<div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--accent-text);">'+currentElapsed.label+'</div>'
     +'</div>':'')
     +'</div>':''}
 </div>
@@ -2155,7 +2156,7 @@ ${log.map(function(e){
     var cols=[e.tripDuration,e.elapsedSinceLastStop].filter(Boolean).length===2?'1fr 1fr':'1fr';
     statsHtml='<div style="margin-top:8px;display:grid;grid-template-columns:'+cols+';gap:6px;">'
       +(e.tripDuration?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Trip Duration</div><div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent2);">'+e.tripDuration.label+'</div></div>':'')
-      +(e.elapsedSinceLastStop?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Since Last Stop</div><div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent);">'+e.elapsedSinceLastStop.label+'</div></div>':'')
+      +(e.elapsedSinceLastStop?'<div style="background:var(--surface2);border-radius:6px;padding:7px 10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Since Last Stop</div><div style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--accent-text);">'+e.elapsedSinceLastStop.label+'</div></div>':'')
       +'</div>';
   }
   return'<div class="card" style="margin-bottom:7px;border-left:3px solid '+color+';padding-left:10px;">'
@@ -2190,12 +2191,12 @@ function render(){
     else if(S.tab==='reports')html=renderReports();
     el.innerHTML=html;
   }catch(err){
-    el.innerHTML='<div style="background:#142a4f;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;word-break:break-all;"><div style="font-weight:700;margin-bottom:6px;">App Error (tab: '+S.tab+')</div><div>'+(err&&err.message?err.message:String(err))+'</div></div>';
+    el.innerHTML='<div style="background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;word-break:break-all;"><div style="font-weight:700;margin-bottom:6px;">App Error (tab: '+S.tab+')</div><div>'+(err&&err.message?err.message:String(err))+'</div></div>';
   }
 }
 window.onerror=function(msg,src,line,col){
   var el=document.getElementById('mc');
-  if(el)el.innerHTML='<div style="background:#142a4f;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;word-break:break-all;"><div style="font-weight:700;margin-bottom:6px;">JS Error</div><div>'+msg+'</div><div style="color:#94a3b8;margin-top:4px;">Line '+line+'</div></div>';
+  if(el)el.innerHTML='<div style="background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;word-break:break-all;"><div style="font-weight:700;margin-bottom:6px;">JS Error</div><div>'+msg+'</div><div style="color:#94a3b8;margin-top:4px;">Line '+line+'</div></div>';
   return false;
 };
 window.addEventListener('unhandledrejection',function(ev){
@@ -2204,7 +2205,7 @@ window.addEventListener('unhandledrejection',function(ev){
 render();
 loadState().then(function(){ render(); checkSubscription(); }).catch(function(err){
   var el=document.getElementById('mc');
-  if(el)el.innerHTML='<div style="background:#142a4f;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;">Load Error: '+(err&&err.message?err.message:String(err))+'</div>';
+  if(el)el.innerHTML='<div style="background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:14px;margin:10px 0;font-size:11px;color:#ef4444;font-family:monospace;">Load Error: '+(err&&err.message?err.message:String(err))+'</div>';
 });
 
 // ── RevenueCat Paywall ──────────────────────────────────────────
