@@ -58,11 +58,40 @@
   <form class="si-form" onsubmit="siSubmit();return false;">
     <input class="si-input" id="si-email" type="email" placeholder="Email" autocomplete="email" required/>
     <input class="si-input" id="si-password" type="password" placeholder="Password" autocomplete="current-password" required minlength="6"/>
+    <input class="si-input" id="si-confirm" type="password" placeholder="Confirm Password" autocomplete="new-password" minlength="6" style="display:none;"/>
     <button class="pw-btn" id="si-btn" type="submit">SIGN IN</button>
   </form>
   <div class="si-switch"><span id="si-switch-text">New here?</span> <span class="pw-restore" id="si-toggle" onclick="siToggleMode()">Create an Account</span></div>
   <div class="pw-restore" id="si-forgot" style="margin-top:10px;" onclick="siForgot()">Forgot Password?</div>
   <div class="pw-error" id="si-error"></div>
+</div>
+
+<div id="chpw-overlay" style="display:none;">
+  <div class="pw-logo">KB COOPER</div>
+  <div class="pw-sub">Load Analyzer — Professional Edition</div>
+  <div class="si-title">Change Password</div>
+  <form class="si-form" onsubmit="cpSubmit();return false;">
+    <input class="si-input" id="cp-current" type="password" placeholder="Current Password" autocomplete="current-password" required/>
+    <input class="si-input" id="cp-password" type="password" placeholder="New Password" autocomplete="new-password" required minlength="6"/>
+    <input class="si-input" id="cp-confirm" type="password" placeholder="Confirm New Password" autocomplete="new-password" required minlength="6"/>
+    <button class="pw-btn" id="cp-btn" type="submit">SAVE PASSWORD</button>
+  </form>
+  <div class="pw-restore" onclick="cpClose()">Cancel</div>
+  <div class="pw-error" id="cp-error"></div>
+</div>
+
+<div id="reset-overlay" style="display:none;">
+  <div class="pw-logo">KB COOPER</div>
+  <div class="pw-sub">Load Analyzer — Professional Edition</div>
+  <div class="si-title">Set a New Password</div>
+  <div class="si-switch" id="rs-email" style="margin:-6px 0 14px;"></div>
+  <form class="si-form" onsubmit="rsSubmit();return false;">
+    <input class="si-input" id="rs-password" type="password" placeholder="New Password" autocomplete="new-password" required minlength="6"/>
+    <input class="si-input" id="rs-confirm" type="password" placeholder="Confirm New Password" autocomplete="new-password" required minlength="6"/>
+    <button class="pw-btn" id="rs-btn" type="submit">SAVE PASSWORD</button>
+  </form>
+  <div class="pw-restore" onclick="rsBackToSignIn()">Back to Sign In</div>
+  <div class="pw-error" id="rs-error"></div>
 </div>
 
 <!-- POD Photo Viewer Overlay -->
@@ -215,7 +244,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:none;cursor:pointer;}
 .pw-restore{font-family:'Barlow',sans-serif;font-size:13px;color:#0d1f3c;text-decoration:underline;cursor:pointer;margin-top:4px;}
 .pw-error{font-family:'Barlow',sans-serif;font-size:12px;color:#dc2626;margin-top:8px;text-align:center;}
 /* Web sign-in */
-#signin-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f4f6f9;z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;}
+#signin-overlay,#reset-overlay,#chpw-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f4f6f9;z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;}
 .si-form{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;}
 .si-input{width:100%;box-sizing:border-box;padding:14px;margin-bottom:12px;background:#ffffff;border:1px solid rgba(13,31,60,0.35);border-radius:10px;color:#1a1a2e;font-family:'Barlow',sans-serif;font-size:16px;}
 .si-input:focus{outline:none;border-color:#0d1f3c;box-shadow:0 0 0 2px rgba(13,31,60,0.15);}
@@ -2265,7 +2294,55 @@ function siErrorText(e) {
   if (code === 'auth/weak-password') return 'Password must be at least 6 characters.';
   if (code === 'auth/invalid-email') return 'Enter a valid email address.';
   if (code === 'auth/too-many-requests') return 'Too many attempts. Try again later.';
+  if (code === 'auth/expired-action-code' || code === 'auth/invalid-action-code') return 'This link has expired or was already used. Request a new one from the sign-in screen.';
   return (e && e.message) || String(e);
+}
+
+// Password-reset links from Firebase emails open here (?mode=resetPassword&oobCode=...)
+var rsQuery = new URLSearchParams(location.search);
+var rsCode = rsQuery.get('mode') === 'resetPassword' ? rsQuery.get('oobCode') : null;
+var rsEmail = '';
+
+function rsSetError(msg) { document.getElementById('rs-error').textContent = msg || ''; }
+
+async function rsShow() {
+  if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  document.getElementById('reset-overlay').style.display = 'flex';
+  try {
+    rsEmail = await firebase.auth().verifyPasswordResetCode(rsCode);
+    document.getElementById('rs-email').textContent = 'For ' + rsEmail;
+  } catch(e) {
+    rsSetError(siErrorText(e));
+    document.getElementById('rs-btn').disabled = true;
+  }
+}
+
+function rsBackToSignIn() {
+  rsCode = null;
+  history.replaceState(null, '', location.pathname);
+  document.getElementById('reset-overlay').style.display = 'none';
+  checkSubscription();
+}
+
+async function rsSubmit() {
+  var pw = document.getElementById('rs-password').value;
+  rsSetError('');
+  if (pw !== document.getElementById('rs-confirm').value) { rsSetError('Passwords do not match.'); return; }
+  var btn = document.getElementById('rs-btn');
+  btn.disabled = true;
+  try {
+    await firebase.auth().confirmPasswordReset(rsCode, pw);
+    await firebase.auth().signOut();
+    siUser = null; rsCode = null;
+    history.replaceState(null, '', location.pathname);
+    document.getElementById('reset-overlay').style.display = 'none';
+    document.getElementById('si-email').value = rsEmail;
+    showSignIn();
+    siSetError('Password updated. Sign in with your new password.', true);
+  } catch(e) {
+    rsSetError(siErrorText(e));
+  }
+  btn.disabled = false;
 }
 
 function siToggleMode() {
@@ -2276,6 +2353,10 @@ function siToggleMode() {
   document.getElementById('si-toggle').textContent = siMode === 'signin' ? 'Create an Account' : 'Sign In';
   document.getElementById('si-forgot').style.display = siMode === 'signin' ? '' : 'none';
   document.getElementById('si-password').autocomplete = siMode === 'signin' ? 'current-password' : 'new-password';
+  var confirmBox = document.getElementById('si-confirm');
+  confirmBox.style.display = siMode === 'signin' ? 'none' : '';
+  confirmBox.required = siMode !== 'signin';
+  confirmBox.value = '';
   siSetError('');
 }
 
@@ -2284,6 +2365,7 @@ async function siSubmit() {
   var password = document.getElementById('si-password').value;
   var btn = document.getElementById('si-btn');
   siSetError('');
+  if (siMode === 'create' && password !== document.getElementById('si-confirm').value) { siSetError('Passwords do not match.'); return; }
   btn.disabled = true;
   try {
     var auth = firebase.auth();
@@ -2462,13 +2544,33 @@ async function siCancel() {
   }
 }
 
-async function siChangePassword() {
+// Signed-in password change: confirm the current password, then save the new one (no email)
+function siChangePassword() {
+  ['cp-current', 'cp-password', 'cp-confirm'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('cp-error').textContent = '';
+  document.getElementById('chpw-overlay').style.display = 'flex';
+}
+
+function cpClose() { document.getElementById('chpw-overlay').style.display = 'none'; }
+
+async function cpSubmit() {
+  var current = document.getElementById('cp-current').value;
+  var pw = document.getElementById('cp-password').value;
+  var err = document.getElementById('cp-error');
+  err.textContent = '';
+  if (pw !== document.getElementById('cp-confirm').value) { err.textContent = 'New passwords do not match.'; return; }
+  var btn = document.getElementById('cp-btn');
+  btn.disabled = true;
   try {
-    await firebase.auth().sendPasswordResetEmail(siUser.email);
-    alert('We sent a link to ' + siUser.email + ' to set a new password. Check your spam folder if you do not see it.');
+    await siUser.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(siUser.email, current));
+    await siUser.updatePassword(pw);
+    cpClose();
+    alert('Your password has been changed.');
   } catch(e) {
-    alert('Could not send the email: ' + siErrorText(e));
+    var code = e && e.code || '';
+    err.textContent = (code === 'auth/invalid-credential' || code === 'auth/wrong-password') ? 'Current password is incorrect.' : siErrorText(e);
   }
+  btn.disabled = false;
 }
 
 async function siSignOut() {
@@ -2508,12 +2610,20 @@ function pwSelect(plan) {
   document.getElementById('pw-yearly').classList.toggle('selected', plan === 'yearly');
 }
 
+// Web: the sandbox test copy and the live site share accounts, so each one only
+// counts purchases made in its own environment (sandbox key vs live key).
+function rcWebIsSandbox() { return RC_WEB_API_KEY.indexOf('rcb_sb_') === 0; }
+function rcSameEnvironment(ent) { return isNativeApp() || ent.isSandbox === rcWebIsSandbox(); }
+function rcHasAccess(info) {
+  var ent = info && info.entitlements && info.entitlements.active && info.entitlements.active[RC_ENTITLEMENT];
+  return !!(ent && rcSameEnvironment(ent));
+}
+
 // One free trial per customer: anyone who has subscribed before sees plain plan wording
 let pwTrialEligible = true;
 function pwApplyTrialWording(info) {
-  var ent = info && info.entitlements && info.entitlements.all;
-  var bought = info && info.allPurchaseDatesByProduct && Object.keys(info.allPurchaseDatesByProduct).length;
-  pwTrialEligible = !(ent && ent[RC_ENTITLEMENT]) && !bought;
+  var ent = info && info.entitlements && info.entitlements.all && info.entitlements.all[RC_ENTITLEMENT];
+  pwTrialEligible = !(ent && rcSameEnvironment(ent));
   document.getElementById('pw-trial').style.display = pwTrialEligible ? '' : 'none';
   document.getElementById('pw-desc-monthly').textContent = pwTrialEligible ? 'Billed monthly after free trial' : 'Billed monthly';
   document.getElementById('pw-desc-yearly').textContent = pwTrialEligible ? 'Billed yearly after free trial — best value' : 'Billed yearly — best value';
@@ -2540,6 +2650,7 @@ function pwSetLoading(loading) {
 
 async function checkSubscription() {
   if (!isNativeApp()) {
+    if (rsCode) { rsShow(); return; }
     if (!siUser && !(await siCurrentUser())) { S.subscribed = false; S.subChecked = true; showSignIn(); return; }
     if (!cloudReady) await cloudLoadAccount();
     document.getElementById('pw-signout').style.display = '';
@@ -2550,8 +2661,7 @@ async function checkSubscription() {
     var result = await Purchases.getCustomerInfo();
     var info = result && result.customerInfo ? result.customerInfo : result;
     S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
-    var active = info && info.entitlements && info.entitlements.active;
-    S.subscribed = !!(active && active[RC_ENTITLEMENT]);
+    S.subscribed = rcHasAccess(info);
     S.subChecked = true;
   } catch(e) {
     S.subscribed = false; S.subChecked = true;
@@ -2567,8 +2677,7 @@ async function recheckSubscription() {
   try {
     var info = await rcPlugin().getCustomerInfo();
     S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
-    var active = info && info.entitlements && info.entitlements.active;
-    if (!(active && active[RC_ENTITLEMENT])) { S.subscribed = false; showPaywall(); }
+    if (!rcHasAccess(info)) { S.subscribed = false; showPaywall(); }
   } catch(e) {
     console.warn('RC recheckSubscription error:', e);
   }
@@ -2598,8 +2707,7 @@ async function pwSubscribe() {
     var purchaseResult = await Purchases.purchasePackage({ aPackage: pkg });
     var info = purchaseResult && purchaseResult.customerInfo ? purchaseResult.customerInfo : purchaseResult;
     S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
-    var active = info && info.entitlements && info.entitlements.active;
-    if (active && active[RC_ENTITLEMENT]) {
+    if (rcHasAccess(info)) {
       S.subscribed = true;
       hidePaywall();
       render();
@@ -2625,8 +2733,7 @@ async function pwRestore() {
     var result = await Purchases.restorePurchases();
     var info = result && result.customerInfo ? result.customerInfo : result;
     S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
-    var active = info && info.entitlements && info.entitlements.active;
-    if (active && active[RC_ENTITLEMENT]) {
+    if (rcHasAccess(info)) {
       S.subscribed = true;
       hidePaywall();
       render();
