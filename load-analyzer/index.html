@@ -23,26 +23,27 @@
   <!-- Firebase Auth for web accounts (web version only) -->
   <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
 
 </head>
 <body style="margin:0;padding:0;background:#f4f6f9;height:100%;overflow:hidden;">
 <div id="paywall-overlay" style="display:none;">
   <div class="pw-logo">KB COOPER</div>
   <div class="pw-sub">Load Analyzer — Professional Edition</div>
-  <div class="pw-trial">🎉 3-Day Free Trial — Cancel Anytime</div>
+  <div class="pw-trial" id="pw-trial">🎉 3-Day Free Trial — Cancel Anytime</div>
   <div class="pw-card selected" id="pw-monthly" onclick="pwSelect('monthly')">
     <div class="pw-card-top">
       <div class="pw-card-name">Monthly</div>
-      <div class="pw-card-price">$3.49<span style="font-size:13px;font-weight:400;color:#dde4ee;">/mo</span></div>
+      <div class="pw-card-price">$3.49<span style="font-size:13px;font-weight:400;color:#3f4a5c;">/mo</span></div>
     </div>
-    <div class="pw-card-desc">Billed monthly after free trial</div>
+    <div class="pw-card-desc" id="pw-desc-monthly">Billed monthly after free trial</div>
   </div>
   <div class="pw-card" id="pw-yearly" onclick="pwSelect('yearly')">
     <div class="pw-card-top">
       <div class="pw-card-name">Yearly <span style="font-size:11px;background:#10b981;color:#0d1f3c;border-radius:4px;padding:2px 6px;font-weight:700;">SAVE 28%</span></div>
-      <div class="pw-card-price">$29.99<span style="font-size:13px;font-weight:400;color:#dde4ee;">/yr</span></div>
+      <div class="pw-card-price">$29.99<span style="font-size:13px;font-weight:400;color:#3f4a5c;">/yr</span></div>
     </div>
-    <div class="pw-card-desc">Billed yearly after free trial — best value</div>
+    <div class="pw-card-desc" id="pw-desc-yearly">Billed yearly after free trial — best value</div>
   </div>
   <button class="pw-btn" id="pw-subscribe-btn" onclick="pwSubscribe()">START FREE TRIAL</button>
   <div class="pw-restore" onclick="pwRestore()">Restore Previous Purchase</div>
@@ -198,26 +199,26 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:none;cursor:pointer;}
 .setup-card-toggle{font-size:14px;color:var(--muted);font-weight:700;}
 
 /* Paywall */
-#paywall-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1f3c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;}
-.pw-logo{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#c8a84b;letter-spacing:2px;margin-bottom:4px;}
-.pw-sub{font-family:'Barlow',sans-serif;font-size:13px;color:#94a3b8;margin-bottom:28px;text-align:center;}
-.pw-card{background:#142a4f;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;width:100%;max-width:360px;margin-bottom:12px;cursor:pointer;transition:border-color 0.2s;}
-.pw-card.selected{border-color:#c8a84b;}
+#paywall-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f4f6f9;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;}
+.pw-logo{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#8a6a12;letter-spacing:2px;margin-bottom:4px;}
+.pw-sub{font-family:'Barlow',sans-serif;font-size:13px;color:#3f4a5c;margin-bottom:28px;text-align:center;}
+.pw-card{background:#ffffff;border:1px solid rgba(13,31,60,0.18);border-radius:14px;padding:18px;width:100%;max-width:360px;margin-bottom:12px;cursor:pointer;transition:border-color 0.2s;}
+.pw-card.selected{border:2px solid #0d1f3c;}
 .pw-card-top{display:flex;justify-content:space-between;align-items:center;}
-.pw-card-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#f1f5f9;}
-.pw-card-price{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#c8a84b;}
-.pw-card-desc{font-size:11px;color:#dde4ee;margin-top:4px;}
-.pw-trial{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:8px 12px;text-align:center;font-size:12px;color:#10b981;margin-bottom:20px;width:100%;max-width:360px;box-sizing:border-box;}
-.pw-btn{width:100%;max-width:360px;padding:16px;background:#c8a84b;color:#0d1f3c;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;margin-bottom:10px;}
+.pw-card-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:#0d1f3c;}
+.pw-card-price{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#8a6a12;}
+.pw-card-desc{font-family:'Barlow',sans-serif;font-size:12px;color:#3f4a5c;margin-top:4px;}
+.pw-trial{font-family:'Barlow',sans-serif;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:8px 12px;text-align:center;font-size:12px;color:#047857;margin-bottom:20px;width:100%;max-width:360px;box-sizing:border-box;}
+.pw-btn{width:100%;max-width:360px;padding:16px;background:#0d1f3c;color:#ffffff;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;margin-bottom:10px;}
 .pw-btn:disabled{opacity:0.5;}
-.pw-restore{font-size:12px;color:#60a5fa;text-decoration:underline;cursor:pointer;margin-top:4px;}
-.pw-error{font-size:11px;color:#ef4444;margin-top:8px;text-align:center;}
+.pw-restore{font-family:'Barlow',sans-serif;font-size:13px;color:#0d1f3c;text-decoration:underline;cursor:pointer;margin-top:4px;}
+.pw-error{font-family:'Barlow',sans-serif;font-size:12px;color:#dc2626;margin-top:8px;text-align:center;}
 /* Web sign-in */
-#signin-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1f3c;z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;}
+#signin-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f4f6f9;z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;}
 .si-form{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;}
-.si-input{width:100%;box-sizing:border-box;padding:14px;margin-bottom:12px;background:#142a4f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-family:'Barlow',sans-serif;font-size:16px;}
-.si-input:focus{outline:none;border-color:#c8a84b;}
-.si-ok{color:#10b981;}
+.si-input{width:100%;box-sizing:border-box;padding:14px;margin-bottom:12px;background:#ffffff;border:1px solid rgba(13,31,60,0.35);border-radius:10px;color:#1a1a2e;font-family:'Barlow',sans-serif;font-size:16px;}
+.si-input:focus{outline:none;border-color:#0d1f3c;box-shadow:0 0 0 2px rgba(13,31,60,0.15);}
+.si-ok{color:#047857;}
 
 </style>
 
@@ -264,7 +265,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:none;cursor:pointer;}
 </script>
 
 <script>
-const KV='kbc_v7_config', KL='kbc_v7_loads', KTL='kbc_v7_triplog';
+// Web: switched to per-account keys after sign-in (see siUseAccountStorage)
+let KV='kbc_v7_config', KL='kbc_v7_loads', KTL='kbc_v7_triplog';
 // Service fee amounts -- updated by developer in version releases only
 const APP_MONTHLY_FEE=3.49;
 const APP_YEARLY_FEE=29.99;
@@ -293,9 +295,9 @@ function backfillLoadMileage(){
   });
   if(changed)saveTripLog();
 }
-async function saveCfg(){try{localStorage.setItem(KV,JSON.stringify(S.config));}catch(e){}}
-async function saveLds(){try{localStorage.setItem(KL,JSON.stringify(S.loads));}catch(e){}}
-async function saveTripLog(){try{localStorage.setItem(KTL,JSON.stringify(S.tripLog));}catch(e){}}
+async function saveCfg(){try{localStorage.setItem(KV,JSON.stringify(S.config));}catch(e){}cloudQueue('config');}
+async function saveLds(){try{localStorage.setItem(KL,JSON.stringify(S.loads));}catch(e){}cloudQueue('loads');}
+async function saveTripLog(){try{localStorage.setItem(KTL,JSON.stringify(S.tripLog));}catch(e){}cloudQueue('triplog');}
 
 function expireCounterOffers(){
   const now=Date.now();let changed=false;
@@ -1693,8 +1695,8 @@ function renderSetup(){
   const mandatoryMet=!!(c.ownerName&&c.personalEmail&&(isFirstTime?c.agreementAccepted:true));
   return`
 <div class="section-title">Setup ${c.configSavedAt?`<span style="font-size:11px;font-weight:400;color:var(--muted);">Active since ${new Date(c.configSavedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`:''}</div>
+${siUser?`<div class="card"><div style="font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;">Signed in as <span style="color:var(--text);">${siUser.email}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;">${S.subscribed&&S.rcManageURL?`<button class="btn btn-primary" onclick="siManage()">Manage Subscription</button><button class="btn btn-danger" onclick="siCancel()">Cancel Subscription</button>`:''}<button class="btn btn-outline" onclick="siSignOut()">Sign Out</button></div></div>`:''}
 ${c.configSavedAt?setupSummaryHtml(c,own,leaseStats):''}
-${siUser?`<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;"><div style="font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;">Signed in as <span style="color:var(--text);">${siUser.email}</span></div><button class="btn btn-outline" style="flex-shrink:0;" onclick="siSignOut()">Sign Out</button></div>`:''}
 <div class="card">${sh('personal','PERSONAL INFO *')}
   <div class="form-group"><label class="form-label">Full Name <span style="color:var(--danger)">*</span></label><input class="form-input" type="text" placeholder="First Last" value="${c.ownerName||''}" oninput="(S.config=S.config||{}).ownerName=this.value"/></div>
   <div class="form-group"><label class="form-label">Driver's License #</label><input class="form-input" type="text" placeholder="License number" value="${c.driversLicense||''}" oninput="(S.config=S.config||{}).driversLicense=this.value"/></div>
@@ -2303,8 +2305,164 @@ async function siForgot() {
   }
 }
 
-function siSignOut() {
-  firebase.auth().signOut().then(function() { location.reload(); });
+// ── Web account data ──────────────────────────────────────────
+// Setup, loads and trip log are saved to the signed-in account in Firestore
+// (users/{uid}/...) so they follow the customer to any device. POD photos are
+// too large for Firestore documents and stay on the device that took them.
+let cloudReady = false;
+const cloudPending = {};
+let cloudTimer = null;
+const cloudLoadJson = {};
+
+function cloudDb() { return firebase.firestore(); }
+function cloudUserRef() { return cloudDb().collection('users').doc(siUser.uid); }
+function loadWithoutPhotos(l) { var c = Object.assign({}, l); delete c.pods; return c; }
+
+// Each account gets its own keys on this device; data saved before accounts existed moves into the first account
+function siUseAccountStorage(uid) {
+  var legacy = [KV, KL, KTL], moved = false;
+  KV = 'kbc_v7_config:' + uid; KL = 'kbc_v7_loads:' + uid; KTL = 'kbc_v7_triplog:' + uid;
+  try {
+    var keys = [KV, KL, KTL];
+    if (!keys.some(function(k) { return localStorage.getItem(k) !== null; })) {
+      legacy.forEach(function(k, i) {
+        var v = localStorage.getItem(k);
+        if (v !== null) { localStorage.setItem(keys[i], v); localStorage.removeItem(k); moved = true; }
+      });
+    }
+  } catch(e) {}
+  return moved;
+}
+
+async function cloudLoadAccount() {
+  var moved = siUseAccountStorage(siUser.uid);
+  S.config = null; S.loads = []; S.tripLog = [];
+  await loadState();
+  var device = { config: S.config, loads: S.loads.slice(), tripLog: S.tripLog.slice() };
+  try {
+    var ref = cloudUserRef();
+    var cfgDoc = await ref.collection('data').doc('config').get();
+    if (cfgDoc.exists) {
+      var tripDoc = await ref.collection('data').doc('triplog').get();
+      var loadDocs = await ref.collection('loads').get();
+      var photos = {};
+      S.loads.forEach(function(l) { if (l.pods && l.pods.length) photos[l.id] = l.pods; });
+      S.config = JSON.parse(cfgDoc.data().json || 'null');
+      S.tripLog = tripDoc.exists ? JSON.parse(tripDoc.data().json || '[]') : [];
+      S.loads = loadDocs.docs.map(function(d) {
+        var l = JSON.parse(d.data().json);
+        cloudLoadJson[l.id] = d.data().json;
+        if (photos[l.id]) l.pods = photos[l.id];
+        return l;
+      }).sort(function(a, b) { return (b.id || 0) - (a.id || 0); });
+      // Data this device had before signing in is merged in, never dropped
+      var merged = false;
+      if (moved) {
+        var ids = {}; S.loads.forEach(function(l) { ids[l.id] = true; });
+        device.loads.forEach(function(l) { if (!ids[l.id]) { S.loads.push(l); merged = true; } });
+        var trips = {}; S.tripLog.forEach(function(t) { trips[JSON.stringify(t)] = true; });
+        device.tripLog.forEach(function(t) { if (!trips[JSON.stringify(t)]) { S.tripLog.push(t); merged = true; } });
+        if (!S.config && device.config) { S.config = device.config; merged = true; }
+      }
+      try {
+        localStorage.setItem(KV, JSON.stringify(S.config));
+        localStorage.setItem(KL, JSON.stringify(S.loads));
+        localStorage.setItem(KTL, JSON.stringify(S.tripLog));
+      } catch(e) {}
+      cloudReady = true;
+      await loadState();
+      if (merged) { cloudQueue('config'); cloudQueue('loads'); cloudQueue('triplog'); }
+    } else {
+      // First sign-in for this account: upload what this device has
+      cloudReady = true;
+      cloudQueue('config'); cloudQueue('loads'); cloudQueue('triplog');
+    }
+  } catch(e) {
+    console.warn('Cloud load failed:', e);
+  }
+  render();
+}
+
+function cloudQueue(part) {
+  if (isNativeApp() || !siUser || !cloudReady) return;
+  cloudPending[part] = true;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(cloudFlush, 1500);
+}
+
+async function cloudFlush() {
+  if (!siUser || !cloudReady) return;
+  var parts = Object.keys(cloudPending);
+  parts.forEach(function(k) { delete cloudPending[k]; });
+  var ref = cloudUserRef();
+  try {
+    var batch = cloudDb().batch(), ops = 0;
+    if (parts.indexOf('config') >= 0) { batch.set(ref.collection('data').doc('config'), { json: JSON.stringify(S.config || null) }); ops++; }
+    if (parts.indexOf('triplog') >= 0) { batch.set(ref.collection('data').doc('triplog'), { json: JSON.stringify(S.tripLog || []) }); ops++; }
+    if (parts.indexOf('loads') >= 0) {
+      var seen = {};
+      for (var i = 0; i < S.loads.length; i++) {
+        var l = S.loads[i], json = JSON.stringify(loadWithoutPhotos(l));
+        seen[l.id] = true;
+        if (cloudLoadJson[l.id] === json) continue;
+        if (ops >= 450) { await batch.commit(); batch = cloudDb().batch(); ops = 0; }
+        batch.set(ref.collection('loads').doc(String(l.id)), { json: json });
+        cloudLoadJson[l.id] = json; ops++;
+      }
+      Object.keys(cloudLoadJson).forEach(function(id) {
+        if (!seen[id]) { batch.delete(ref.collection('loads').doc(String(id))); delete cloudLoadJson[id]; ops++; }
+      });
+    }
+    if (ops) await batch.commit();
+  } catch(e) {
+    console.warn('Cloud save failed, will retry:', e);
+    parts.forEach(function(k) { cloudPending[k] = true; });
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(cloudFlush, 15000);
+  }
+}
+
+// Manage / cancel go through the billing Worker, which holds RevenueCat's secret key
+const BILLING_API = 'https://load-analyzer-billing.kbcooper-billing.workers.dev';
+
+async function billingCall(path) {
+  var token = await siUser.getIdToken();
+  var res = await fetch(BILLING_API + path, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+  var body = await res.json().catch(function() { return {}; });
+  if (!res.ok) throw new Error(body.error || 'Request failed');
+  return body;
+}
+
+async function siManage() {
+  // Open the tab during the click so browsers don't block it, then point it at the signed link
+  var win = window.open('', '_blank');
+  try {
+    var r = await billingCall('/manage');
+    if (!r.url) throw new Error('Subscription page not available');
+    if (win) win.location.href = r.url; else location.href = r.url;
+  } catch(e) {
+    if (win) win.close();
+    alert('Could not open your subscription: ' + e.message);
+  }
+}
+
+async function siCancel() {
+  if (!confirm('Cancel your subscription?\n\nYou will keep access until the end of your current period. You will be signed out now.')) return;
+  try {
+    await billingCall('/cancel');
+    alert('Your subscription is cancelled. You will keep access until the end of your current period.');
+    siSignOut();
+  } catch(e) {
+    alert('Could not cancel your subscription: ' + e.message);
+  }
+}
+
+async function siSignOut() {
+  // Finish saving pending changes to the account first
+  clearTimeout(cloudTimer);
+  if (Object.keys(cloudPending).length) await cloudFlush();
+  await firebase.auth().signOut();
+  location.reload();
 }
 
 // Native plugin in the app; RevenueCat Web Billing in a browser
@@ -2336,6 +2494,18 @@ function pwSelect(plan) {
   document.getElementById('pw-yearly').classList.toggle('selected', plan === 'yearly');
 }
 
+// One free trial per customer: anyone who has subscribed before sees plain plan wording
+let pwTrialEligible = true;
+function pwApplyTrialWording(info) {
+  var ent = info && info.entitlements && info.entitlements.all;
+  var bought = info && info.allPurchaseDatesByProduct && Object.keys(info.allPurchaseDatesByProduct).length;
+  pwTrialEligible = !(ent && ent[RC_ENTITLEMENT]) && !bought;
+  document.getElementById('pw-trial').style.display = pwTrialEligible ? '' : 'none';
+  document.getElementById('pw-desc-monthly').textContent = pwTrialEligible ? 'Billed monthly after free trial' : 'Billed monthly';
+  document.getElementById('pw-desc-yearly').textContent = pwTrialEligible ? 'Billed yearly after free trial — best value' : 'Billed yearly — best value';
+  document.getElementById('pw-subscribe-btn').textContent = pwTrialEligible ? 'START FREE TRIAL' : 'SUBSCRIBE';
+}
+
 function showPaywall() {
   document.getElementById('paywall-overlay').style.display = 'flex';
 }
@@ -2351,12 +2521,13 @@ function pwSetError(msg) {
 
 function pwSetLoading(loading) {
   var btn = document.getElementById('pw-subscribe-btn');
-  if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Processing...' : 'START FREE TRIAL'; }
+  if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Processing...' : (pwTrialEligible ? 'START FREE TRIAL' : 'SUBSCRIBE'); }
 }
 
 async function checkSubscription() {
   if (!isNativeApp()) {
     if (!siUser && !(await siCurrentUser())) { S.subscribed = false; S.subChecked = true; showSignIn(); return; }
+    if (!cloudReady) await cloudLoadAccount();
     document.getElementById('pw-signout').style.display = '';
   }
   try {
@@ -2364,6 +2535,7 @@ async function checkSubscription() {
     if (!Purchases) { S.subscribed = false; S.subChecked = true; showPaywall(); pwSetError('Purchases not available.'); return; }
     var result = await Purchases.getCustomerInfo();
     var info = result && result.customerInfo ? result.customerInfo : result;
+    S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
     var active = info && info.entitlements && info.entitlements.active;
     S.subscribed = !!(active && active[RC_ENTITLEMENT]);
     S.subChecked = true;
@@ -2373,6 +2545,22 @@ async function checkSubscription() {
   }
   if (!S.subscribed) showPaywall();
 }
+
+// Web: re-check while the app stays open, so a lapsed subscription locks it
+// without a reload. Errors keep the current state so a network blip never locks out a subscriber.
+async function recheckSubscription() {
+  if (isNativeApp() || !siUser || !S.subscribed) return;
+  try {
+    var info = await rcPlugin().getCustomerInfo();
+    S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
+    var active = info && info.entitlements && info.entitlements.active;
+    if (!(active && active[RC_ENTITLEMENT])) { S.subscribed = false; showPaywall(); }
+  } catch(e) {
+    console.warn('RC recheckSubscription error:', e);
+  }
+}
+setInterval(recheckSubscription, 5 * 60 * 1000);
+document.addEventListener('visibilitychange', function() { if (!document.hidden) recheckSubscription(); });
 
 async function pwSubscribe() {
   pwSetError('');
@@ -2395,6 +2583,7 @@ async function pwSubscribe() {
     if (!pkg) { pwSetError('Selected plan not available.'); pwSetLoading(false); return; }
     var purchaseResult = await Purchases.purchasePackage({ aPackage: pkg });
     var info = purchaseResult && purchaseResult.customerInfo ? purchaseResult.customerInfo : purchaseResult;
+    S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
     var active = info && info.entitlements && info.entitlements.active;
     if (active && active[RC_ENTITLEMENT]) {
       S.subscribed = true;
@@ -2421,6 +2610,7 @@ async function pwRestore() {
     if (!Purchases) { pwSetLoading(false); return; }
     var result = await Purchases.restorePurchases();
     var info = result && result.customerInfo ? result.customerInfo : result;
+    S.rcManageURL = (info && info.managementURL) || null; pwApplyTrialWording(info);
     var active = info && info.entitlements && info.entitlements.active;
     if (active && active[RC_ENTITLEMENT]) {
       S.subscribed = true;
