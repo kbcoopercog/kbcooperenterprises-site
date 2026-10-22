@@ -54,12 +54,13 @@
 <div id="signin-overlay" style="display:none;">
   <div class="pw-logo">KB COOPER</div>
   <div class="pw-sub">Load Analyzer — Professional Edition</div>
+  <div class="si-title" id="si-title">Sign In</div>
   <form class="si-form" onsubmit="siSubmit();return false;">
     <input class="si-input" id="si-email" type="email" placeholder="Email" autocomplete="email" required/>
     <input class="si-input" id="si-password" type="password" placeholder="Password" autocomplete="current-password" required minlength="6"/>
     <button class="pw-btn" id="si-btn" type="submit">SIGN IN</button>
   </form>
-  <div class="pw-restore" id="si-toggle" onclick="siToggleMode()">Create an Account</div>
+  <div class="si-switch"><span id="si-switch-text">New here?</span> <span class="pw-restore" id="si-toggle" onclick="siToggleMode()">Create an Account</span></div>
   <div class="pw-restore" id="si-forgot" style="margin-top:10px;" onclick="siForgot()">Forgot Password?</div>
   <div class="pw-error" id="si-error"></div>
 </div>
@@ -219,6 +220,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:none;cursor:pointer;}
 .si-input{width:100%;box-sizing:border-box;padding:14px;margin-bottom:12px;background:#ffffff;border:1px solid rgba(13,31,60,0.35);border-radius:10px;color:#1a1a2e;font-family:'Barlow',sans-serif;font-size:16px;}
 .si-input:focus{outline:none;border-color:#0d1f3c;box-shadow:0 0 0 2px rgba(13,31,60,0.15);}
 .si-ok{color:#047857;}
+.si-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:#0d1f3c;margin-bottom:14px;}
+.si-switch{font-family:'Barlow',sans-serif;font-size:13px;color:#3f4a5c;margin-top:4px;}
 
 </style>
 
@@ -1695,7 +1698,7 @@ function renderSetup(){
   const mandatoryMet=!!(c.ownerName&&c.personalEmail&&(isFirstTime?c.agreementAccepted:true));
   return`
 <div class="section-title">Setup ${c.configSavedAt?`<span style="font-size:11px;font-weight:400;color:var(--muted);">Active since ${new Date(c.configSavedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`:''}</div>
-${siUser?`<div class="card"><div style="font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;">Signed in as <span style="color:var(--text);">${siUser.email}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;">${S.subscribed&&S.rcManageURL?`<button class="btn btn-primary" onclick="siManage()">Manage Subscription</button><button class="btn btn-danger" onclick="siCancel()">Cancel Subscription</button>`:''}<button class="btn btn-outline" onclick="siSignOut()">Sign Out</button></div></div>`:''}
+${siUser?`<div class="card"><div style="font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;margin-bottom:8px;">Signed in as <span style="color:var(--text);">${siUser.email}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;">${S.subscribed&&S.rcManageURL?`<button class="btn btn-primary" onclick="siManage()">Manage Subscription</button><button class="btn btn-danger" onclick="siCancel()">Cancel Subscription</button>`:''}<button class="btn btn-outline" onclick="siChangePassword()">Change Password</button><button class="btn btn-outline" onclick="siSignOut()">Sign Out</button></div></div>`:''}
 ${c.configSavedAt?setupSummaryHtml(c,own,leaseStats):''}
 <div class="card">${sh('personal','PERSONAL INFO *')}
   <div class="form-group"><label class="form-label">Full Name <span style="color:var(--danger)">*</span></label><input class="form-input" type="text" placeholder="First Last" value="${c.ownerName||''}" oninput="(S.config=S.config||{}).ownerName=this.value"/></div>
@@ -2268,7 +2271,9 @@ function siErrorText(e) {
 function siToggleMode() {
   siMode = siMode === 'signin' ? 'create' : 'signin';
   document.getElementById('si-btn').textContent = siMode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT';
-  document.getElementById('si-toggle').textContent = siMode === 'signin' ? 'Create an Account' : 'Have an Account? Sign In';
+  document.getElementById('si-title').textContent = siMode === 'signin' ? 'Sign In' : 'Create Your Account';
+  document.getElementById('si-switch-text').textContent = siMode === 'signin' ? 'New here?' : 'Already have an account?';
+  document.getElementById('si-toggle').textContent = siMode === 'signin' ? 'Create an Account' : 'Sign In';
   document.getElementById('si-forgot').style.display = siMode === 'signin' ? '' : 'none';
   document.getElementById('si-password').autocomplete = siMode === 'signin' ? 'current-password' : 'new-password';
   siSetError('');
@@ -2454,6 +2459,15 @@ async function siCancel() {
     siSignOut();
   } catch(e) {
     alert('Could not cancel your subscription: ' + e.message);
+  }
+}
+
+async function siChangePassword() {
+  try {
+    await firebase.auth().sendPasswordResetEmail(siUser.email);
+    alert('We sent a link to ' + siUser.email + ' to set a new password. Check your spam folder if you do not see it.');
+  } catch(e) {
+    alert('Could not send the email: ' + siErrorText(e));
   }
 }
 
