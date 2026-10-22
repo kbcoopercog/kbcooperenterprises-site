@@ -2385,7 +2385,8 @@ async function siForgot() {
   var email = document.getElementById('si-email').value.trim();
   if (!email) { siSetError('Enter your email above first.'); return; }
   try {
-    await firebase.auth().sendPasswordResetEmail(email);
+    // The emailed link opens this page, which shows the KB Cooper "Set a New Password" screen
+    await firebase.auth().sendPasswordResetEmail(email, { url: location.origin + location.pathname, handleCodeInApp: true });
     siSetError('Password reset email sent.', true);
   } catch(e) {
     siSetError(siErrorText(e));
